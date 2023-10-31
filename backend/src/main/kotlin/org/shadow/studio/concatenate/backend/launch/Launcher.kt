@@ -10,5 +10,5 @@ interface Launcher {
 
     val workingDirectory: File
 
-    fun launch()
+    fun launch(): Process
 }

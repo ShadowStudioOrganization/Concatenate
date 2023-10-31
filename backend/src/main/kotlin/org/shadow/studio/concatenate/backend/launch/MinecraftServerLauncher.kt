@@ -7,7 +7,7 @@ open class MinecraftServerLauncher(
     override val environments: Map<String, String>,
     override val workingDirectory: File
 ) : MinecraftLauncher() {
-    override fun launch() {
+    override fun launch(): Process {
         TODO("Not yet implemented")
     }
 
