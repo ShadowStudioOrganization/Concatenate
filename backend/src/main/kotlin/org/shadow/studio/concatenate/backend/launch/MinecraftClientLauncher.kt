@@ -6,7 +6,8 @@ import java.io.File
 open class MinecraftClientLauncher(
     private val adapter: JavaAdapter,
     override val environments: Map<String, String>,
-    override val workingDirectory: File
+    override val workingDirectory: File,
+    override val version: MinecraftVersion
 ) : MinecraftLauncher() {
 
     override val program = adapter.getJavaPath("")
