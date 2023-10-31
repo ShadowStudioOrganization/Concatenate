@@ -54,7 +54,7 @@ open class MinecraftClientLauncher(
 --assetIndex 5 ^
 --uuid 00000XXXXXXXXXXXXXXXXXXXXXX114514 ^
 --accessToken 00000XXXXXXXXXXXXXXXXXXXXXX43124 ^
---clientId ${clientid} ^
+--clientId ${clientid}
 --xuid ${auth_xuid} ^
 --userType msa ^
 --versionType PCL ^
