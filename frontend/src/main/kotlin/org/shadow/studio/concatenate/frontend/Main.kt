@@ -65,8 +65,5 @@ fun main() = application {
             AlertDialog(onDismissRequest =  { v = false }, buttons = { Button({}) { Text("Ok") } }, title = { Text("hw") })
         }
     }
-
-
-
 }
 
