@@ -13,8 +13,6 @@ open class MinecraftClientLauncher(
 
     override fun launch(): Process {
 
-
-
         TODO("Not yet implemented")
     }
 
