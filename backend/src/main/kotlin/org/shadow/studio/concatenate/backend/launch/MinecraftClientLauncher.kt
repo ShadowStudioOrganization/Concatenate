@@ -1,5 +1,7 @@
 package org.shadow.studio.concatenate.backend.launch
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
 import org.shadow.studio.concatenate.backend.data.launchscript.LaunchJson
 import java.io.File
@@ -16,7 +18,12 @@ open class MinecraftClientLauncher(
     override val program = adapter.getJavaPath(gameVersion)
 
     private fun getLaunchJson(): LaunchJson {
-        TODO("")
+        val json = "{a:1}"
+        val mapper = jacksonObjectMapper()
+        val map: Map<String, Any> = mapper.readValue(json)
+
+
+        TODO()
     }
 
     override fun launch(): Process {
