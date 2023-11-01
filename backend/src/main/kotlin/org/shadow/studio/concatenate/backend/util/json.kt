@@ -48,7 +48,7 @@ fun parseGameArguments(versionJson: Map<String, Any>): Map<String, String> {
     }
 }
 
-fun mappingGameArguments(versionJson: Map<String, Any>, config: Map<String, String>, rulesOverrides: Map<String, Boolean> = mapOf()): List<String> {
+fun mappingGameArguments(versionJson: Map<String, Any>, config: Map<String, String>, ruleFeatures: Map<String, Boolean> = mapOf()): List<String> {
     return JsonUtilScope.run {
         val gameArguments = mutableListOf<String>()
         val json = versionJson["arguments"]["game"] as List<Any?>
@@ -66,10 +66,10 @@ fun mappingGameArguments(versionJson: Map<String, Any>, config: Map<String, Stri
                 rules.forEach { ruleTest ->
                     when (ruleTest["action"]) {
                         "allow" -> {
-                            val features = ruleTest["features"]
-                            if (rulesOverrides[features]) {
-
-                            } else if (features[""])
+                            val features = ruleTest["features"] as Map<String, Boolean>
+                            features.keys.forEach { featuresKeys ->
+                                ruleFeatures[featuresKeys] == features[featuresKeys]
+                            }
                         }
                     }
                 }
