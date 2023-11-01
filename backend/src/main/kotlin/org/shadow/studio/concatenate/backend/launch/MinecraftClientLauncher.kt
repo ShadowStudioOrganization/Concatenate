@@ -1,6 +1,7 @@
 package org.shadow.studio.concatenate.backend.launch
 
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
+import org.shadow.studio.concatenate.backend.data.launchscript.LaunchJson
 import java.io.File
 
 open class MinecraftClientLauncher(
@@ -14,7 +15,19 @@ open class MinecraftClientLauncher(
     val gameVersion = version.getVersionString()
     override val program = adapter.getJavaPath(gameVersion)
 
+    private fun getLaunchJson(): LaunchJson {
+        TODO("")
+    }
+
     override fun launch(): Process {
+        val process: Process? = null
+        val launchJson = getLaunchJson()
+
+        return process!!
+    }
+
+    private fun tmpFor1_12() {
+
         val proc: Process? = null
         // Joint parameter
         val lib = "$workingDirectory \\libraries\\ "
@@ -151,7 +164,5 @@ open class MinecraftClientLauncher(
             pause
         """
 
-        return proc!!
     }
-
 }
