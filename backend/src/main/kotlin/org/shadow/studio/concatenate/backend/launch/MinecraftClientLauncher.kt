@@ -30,21 +30,15 @@ open class MinecraftClientLauncher(
     override fun launch(): Process {
         val process: Process? = null
         val launchJson = mapOf<String, Any?>() // getLaunchJson()
+        val quickPlayPath = ""
         val Xmn = 256
         val Xmx = 4096
+        val height = 480
+        val width = 854
 
         JsonUtilScope.run {
-            val gameArgument = mutableMapOf<String, String>()
-            var cacheValue = ""
-            for (item in launchJson["arguments"]["game"] as List<Any?>) {
-                if (item is String) {
-                    if (item.startsWith("\${")) cacheValue = item else gameArgument[item] = cacheValue
-                } else {
-                    // rules
-                }
-            }
 
-            
+
             val cmd = """
             @echo off 
             title 启动 - ${launchJson["arguments"]["game"][3]}
