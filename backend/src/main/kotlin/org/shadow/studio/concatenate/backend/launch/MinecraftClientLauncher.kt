@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
 import org.shadow.studio.concatenate.backend.data.launchscript.LaunchJson
+import org.shadow.studio.concatenate.backend.util.JsonUtilScope
 import java.io.File
 
 open class MinecraftClientLauncher(
@@ -28,16 +29,21 @@ open class MinecraftClientLauncher(
 
     override fun launch(): Process {
         val process: Process? = null
-        val launchJson = getLaunchJson()
+        val launchJson = mapOf<String, Any?>() // getLaunchJson()
         val quickPlayPath = ""
         val Xmn = 256
         val Xmx = 4096
         val height = 480
         val width = 854
 
-        val cmd = """
+        JsonUtilScope.run {
+
+            // sample
+            launchJson["arguments"]["game"][3]
+
+            val cmd = """
             @echo off 
-            title 启动 - ${launchJson.arguments.game[3]}
+            title 启动 - ${launchJson["arguments"]["game"][3]}
             echo 游戏正在启动,请稍候...
             set APPDATA=" ${launchJson.arguments.game[5]} "
             cd /D ${launchJson.arguments.game[5]} "
@@ -79,6 +85,10 @@ open class MinecraftClientLauncher(
             echo 游戏已退出.
             pause
         """
+        }
+
+
+
 
         return process!!
     }
