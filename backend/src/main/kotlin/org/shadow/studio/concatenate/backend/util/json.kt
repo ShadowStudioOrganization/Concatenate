@@ -18,7 +18,15 @@ class JsonUtilScope {
     }
 }
 
-fun parseJson(json: String): Map<String, Any> {
+fun <T> Map<*,*>.havingKey(key: String, action: (T) -> Unit) {
+    if (containsKey(key)) {
+        (this[key] as? T)?.let {
+            action(it)
+        }
+    }
+}
+
+fun parseJson(json: String): Map<String, Any?> {
     val mapper = jacksonObjectMapper()
     return mapper.readValue(json)
 }

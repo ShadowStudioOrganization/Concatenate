@@ -1,8 +1,18 @@
 package org.shadow.studio.concatenate.backend.launch
 
-class MinecraftVersion {
+import java.io.File
 
-    fun getVersionString(): String {
-        return ""
+class MinecraftVersion(
+    val mcVersionID: String,
+    private val jsonProfile: File,
+    private val gameJar: File,
+    val customName: String? = null
+) {
+    fun getJarFile(): File {
+        return gameJar
+    }
+
+    fun getJsonProfile(): String {
+        return jsonProfile.readText()
     }
 }

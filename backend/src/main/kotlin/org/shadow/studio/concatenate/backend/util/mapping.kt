@@ -1,99 +1,53 @@
 package org.shadow.studio.concatenate.backend.util
 
+import org.shadow.studio.concatenate.backend.util.JsonUtilScope.Companion.get
+
 private fun String.placeHolderReplaceWith(pool: Map<String, String>): String {
     return replace(Regex("\\$\\{([^}]*)}")) {
         val key = it.groupValues[1]
-        pool[key] ?: ""// error handling here
+        if (!pool.containsKey(key)) error("$key is required!")// error handling here
+        pool[key] ?: ""
     }
 }
 
-fun mappingGameArguments(versionJson: Map<String, Any>, config: Map<String, String>, ruleFeatures: Map<String, Boolean> = mapOf()): List<String> {
-    return JsonUtilScope.run {
-        val arguments = mutableListOf<String>()
-        val json = versionJson["arguments"]["game"] as List<Any?>
-        for (item in json) {
-            if (item is String) {
-                arguments += item.placeHolderReplaceWith(config)
-            } else {
-                // rules
-                val rules = item["rules"] as List<*>
-                var judgeFlag = 0
-
-                rules.forEach { ruleTest ->
-                    when (ruleTest["action"]) {
-                        "allow" -> {
-                            val features = ruleTest["features"] as Map<String, Boolean>
-                            features.keys.forEach { featureKeys ->
-                                if (ruleFeatures[featureKeys] != features[featureKeys]) judgeFlag ++
-                            }
-                        }
-                    }
-                }
-
-                if (judgeFlag == 0) {
-                    val values = item["value"] as List<String>
-                    for (v in values) {
-                        arguments += v.placeHolderReplaceWith(config)
+fun mappingGameArguments(jsonGameArgs: List<Any?>, config: Map<String, String>, ruleFeatures: Map<String, Boolean> = mapOf()): List<String> {
+    return mutableListOf<String>().apply argList@{
+        JsonUtilScope.run {
+//            val json =  as
+            for (item in jsonGameArgs) {
+                if (item is String) {
+                    this@argList += item.placeHolderReplaceWith(config)
+                } else {
+                    // rules
+                    if (rulesJudging(item["rules"] as List<*>, ruleFeatures)) {
+                        val values = item["value"] as List<String>
+                        values.forEach { this@argList += it.placeHolderReplaceWith(config) }
                     }
                 }
             }
         }
-        arguments
     }
 }
 
-fun mappingJvmArguments(versionJson: Map<String, Any>, config: Map<String, String>): List<String> {
-    return JsonUtilScope.run {
-        val arguments = mutableListOf<String>()
-        val json = versionJson["arguments"]["jvm"] as List<Any?>
-
-        for (item in json) {
+fun mappingJvmArguments(jsonJvmArgs: List<Any?>, config: Map<String, String>): List<String> {
+    return mutableListOf<String>().apply argList@{
+        for (item in jsonJvmArgs) {
             if (item is String)
-                arguments += item.placeHolderReplaceWith(config)
+                this@argList += item.placeHolderReplaceWith(config)
             else {
                 // rules
-                val rules = item["rules"] as List<*>
-                var judgeFlag = 0
-
-                rules.forEach { ruleTest ->
-                    val os = ruleTest["os"] as Map<String, *>
-                    when (ruleTest["action"]) {
-                        "allow" -> {
-                            if (os.containsKey("name")) {
-                                if (os["name"] != getSystemName()) {
-                                    judgeFlag ++
-                                }
-                            }
-                            if (os.containsKey("arch")) {
-                                if (os["arch"] != getSystemArch()) {
-                                    judgeFlag ++
-                                }
-                            }
-                            if (os.containsKey("version")) {
-                                if (os["version"] != getSystemVersion()) {
-                                    judgeFlag ++
-                                }
-                            }
-                        }
-                        "disallow" -> {
-
-                        }
-                    }
-                }
-                if (judgeFlag == 0) {
+                if (rulesJudging(item["rules"] as List<*>)) {
                     val values = item["value"]
                     if (values is String)
-                        arguments += values.placeHolderReplaceWith(config)
+                        this@argList += values.placeHolderReplaceWith(config)
                     else if (values is List<*>)
                         values.forEach {
                             it as String
-                            arguments += it.placeHolderReplaceWith(config)
+                            this@argList += it.placeHolderReplaceWith(config)
                         }
                 }
             }
         }
-
-        arguments
     }
 }
 
