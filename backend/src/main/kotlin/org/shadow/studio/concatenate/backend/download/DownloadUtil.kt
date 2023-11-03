@@ -36,10 +36,10 @@ object DownloadUtil {
         }
     }
 
-    suspend fun getAsStream(urls: List<String>, threads: Int = urls.size) {
+    suspend fun getAsStream(url: String) {
 
         withContext(Dispatchers.IO) {
-            val jobs = urls.map { url ->
+            val jobs = url ->
                 async {
                     val fileName = url.substringAfterLast("/")
                     val k = defaultClient.get(url)
@@ -48,7 +48,7 @@ object DownloadUtil {
 
 
         }
-
-
+    fun getUrlFlieName(url: String): String {
+        return url.substringAfterLast("/")
     }
 }

@@ -15,9 +15,9 @@ class MinecraftClientLauncher(
     override val program = adapter.getJavaPath(version.mcVersionID)
 
     // Get the path of Root
-    val rootPath = RootPathUtils.getRootPath(workingDirectory);
+    val rootPath = RootPathUtils.getRootPath(workingDirectory)
 
-    val isVersionDivided = true;
+    val isVersionDivided = true
 
     override fun launch(): Process {
         val versionJar = version.getJarFile()
