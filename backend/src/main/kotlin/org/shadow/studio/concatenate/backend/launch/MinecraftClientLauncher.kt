@@ -41,10 +41,9 @@ class MinecraftClientLauncher(
         checkExists(nativesDirectory)
         checkExists(javaBin)
 
-        val classpath = gatheringClasspath(profile["libraries"] as List<Map<String, *>>, librariesRoot).let {
-            val list = it.toMutableList()
-            list += versionJar.absolutePath
-            list
+        val classpath = buildList<String> {
+            +gatheringClasspath(profile["libraries"] as List<Map<String, *>>, librariesRoot)
+            +versionJar.absolutePath
         }.joinToString(File.pathSeparator)
 
         val gameArgumentConfiguration = mapOf<String, String>(
