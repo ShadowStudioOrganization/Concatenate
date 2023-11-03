@@ -18,8 +18,6 @@ class MinecraftClientConfig(
         extraJvmArguments["initial_java_heap_size"] = size
     }
 
-    fun
-
     fun enableFeature(name: String) {
         clientRuleFeatures[name] = true
     }
