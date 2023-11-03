@@ -17,27 +17,41 @@ class MinecraftClientLauncher(
     // Get the path of Root
     val rootPath = RootPathUtils.getRootPath(workingDirectory)
 
-    val isVersionDivided = true
+    val isVersionDivided = true;
+
+    private fun checkExists(file: File) {
+        if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
+    }
 
     override fun launch(): Process {
         val versionJar = version.getJarFile()
         val profile = parseJson(version.getJsonProfile())
 
-        // todo change librariesRootFile
-        val classpath = gatheringClasspath(profile["libraries"] as List<Map<String, *>>, File(workingDirectory, "libraries")).let {
+        val librariesRoot = File(workingDirectory, "libraries")
+        val gameDirectory = File(rootPath)
+        val assetsRoot = File(rootPath, "assets")
+        val nativesDirectory = File(workingDirectory,
+            listOf("versions", version.versionName, "${version.versionName}-natives").joinToString(File.separator)
+        )
+        val javaBin = File(program)
+
+        checkExists(librariesRoot)
+        checkExists(gameDirectory)
+        checkExists(assetsRoot)
+        checkExists(nativesDirectory)
+        checkExists(javaBin)
+
+        val classpath = gatheringClasspath(profile["libraries"] as List<Map<String, *>>, librariesRoot).let {
             val list = it.toMutableList()
             list += versionJar.absolutePath
             list
-        }.joinToString(when(getSystemName()) {
-            "windows" -> ";"
-            else -> ":"
-        })
+        }.joinToString(File.pathSeparator)
 
         val gameArgumentConfiguration = mapOf<String, String>(
             "auth_player_name" to "whiterasbk",
             "version_name" to versionJar.nameWithoutExtension,
-            "game_directory" to rootPath + "versions\\flandrebakapack-1.20.1".wrapDoubleQuote(),
-            "assets_root" to rootPath + "assets".wrapDoubleQuote(),
+            "game_directory" to gameDirectory.absolutePath.wrapDoubleQuote(),
+            "assets_root" to assetsRoot.absolutePath.wrapDoubleQuote(),
             "assets_index_name" to profile["assets"].toString(),
             "auth_uuid" to "114514",
             "auth_access_token" to "114514",
@@ -53,25 +67,42 @@ class MinecraftClientLauncher(
         val jvmArgumentConfiguration = mapOf<String, String>(
             "classpath" to classpath.wrapDoubleQuote(),
             "launcher_name" to "Concatenate",
-            "natives_directory" to rootPath + "versions\\flandrebakapack-1.20.1\\flandrebakapack-1.20.1-natives".wrapDoubleQuote(),
+            "natives_directory" to nativesDirectory.absolutePath.wrapDoubleQuote(),
             "launcher_version" to "1"
         )
 
         val jvmMemoryConfiguration = mapOf<String, String>(
-            "use_g1gc" to "true "
+            "use_g1gc" to "true"
         )
 
-        JsonUtilScope.run {
+        val command = JsonUtilScope.run {
             val gameArgList = mappingGameArguments(profile["arguments"]["game"] as List<Any?>, gameArgumentConfiguration, gameRuleFeatures)
             val jvmArgList = mappingJvmArguments(profile["arguments"]["jvm"] as List<Any?>, jvmArgumentConfiguration)
             val jvmMemArgs = mappingJvmMemoryArguments(jvmMemoryConfiguration)
 
-            println(gameArgList.joinToString("\n"))
-            println(jvmArgList.joinToString("\n"))
-            println(jvmMemArgs.joinToString("\n"))
+            mutableListOf<String>().apply {
+                add(javaBin.absolutePath)
+                addAll(jvmMemArgs)
+                add("-Xmx4412m")
+                add("-Dfile.encoding=GB18030")
+                add("-Dsun.stdout.encoding=GB18030")
+                add("-Dsun.stderr.encoding=GB18030")
+                add("-Djava.rmi.server.useCodebaseOnly=true")
+                add("-Dcom.sun.jndi.rmi.object.trustURLCodebase=false")
+                add("-Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false")
+                addAll(jvmArgList)
+                add(profile["mainClass"].toString())
+                addAll(gameArgList)
+            }
         }
 
-        return null!!
+        val preCmd = command.joinToString(" ")
+        println(preCmd)
+
+        val processBuilder = ProcessBuilder(command)
+            .directory(workingDirectory)
+
+        return processBuilder.start()
     }
 
 }

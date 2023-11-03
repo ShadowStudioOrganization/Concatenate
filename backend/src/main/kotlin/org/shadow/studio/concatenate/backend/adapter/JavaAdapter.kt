@@ -5,7 +5,7 @@ package org.shadow.studio.concatenate.backend.adapter
  * */
 class JavaAdapter {
     fun getJavaPath(version: String): String {
-        return ""
+        return "D:/Environments/java/17/bin/java.exe"
     }
 
 }

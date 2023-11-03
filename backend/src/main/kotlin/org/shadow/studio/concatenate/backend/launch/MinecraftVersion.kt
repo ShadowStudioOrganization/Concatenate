@@ -6,7 +6,7 @@ class MinecraftVersion(
     val mcVersionID: String,
     private val jsonProfile: File,
     private val gameJar: File,
-    val customName: String? = null
+    val versionName: String
 ) {
     fun getJarFile(): File {
         return gameJar
