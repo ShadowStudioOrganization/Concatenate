@@ -14,6 +14,11 @@ class MinecraftClientLauncher(
     // Get the path of Java
     override val program = adapter.getJavaPath(version.mcVersionID)
 
+    // Get the path of Root
+    val rootPath = RootPathUtils.getRootPath(workingDirectory);
+
+    val isVersionDivided = true;
+
     override fun launch(): Process {
         val versionJar = version.getJarFile()
         val profile = parseJson(version.getJsonProfile())
@@ -31,8 +36,8 @@ class MinecraftClientLauncher(
         val gameArgumentConfiguration = mapOf<String, String>(
             "auth_player_name" to "whiterasbk",
             "version_name" to versionJar.nameWithoutExtension,
-            "game_directory" to "D:\\Games\\aloneg\\versions\\flandrebakapack-1.20.1".wrapDoubleQuote(),
-            "assets_root" to "D:\\Games\\aloneg\\assets".wrapDoubleQuote(),
+            "game_directory" to rootPath + "versions\\flandrebakapack-1.20.1".wrapDoubleQuote(),
+            "assets_root" to rootPath + "assets".wrapDoubleQuote(),
             "assets_index_name" to profile["assets"].toString(),
             "auth_uuid" to "114514",
             "auth_access_token" to "114514",
@@ -48,7 +53,7 @@ class MinecraftClientLauncher(
         val jvmArgumentConfiguration = mapOf<String, String>(
             "classpath" to classpath.wrapDoubleQuote(),
             "launcher_name" to "Concatenate",
-            "natives_directory" to "D:\\Games\\aloneg\\versions\\flandrebakapack-1.20.1\\flandrebakapack-1.20.1-natives".wrapDoubleQuote(),
+            "natives_directory" to rootPath + "versions\\flandrebakapack-1.20.1\\flandrebakapack-1.20.1-natives".wrapDoubleQuote(),
             "launcher_version" to "1"
         )
 

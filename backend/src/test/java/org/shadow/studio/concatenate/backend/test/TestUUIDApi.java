@@ -3,6 +3,7 @@ package org.shadow.studio.concatenate.backend.test;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.shadow.studio.concatenate.backend.util.RootPathUtils;
 import org.shadow.studio.concatenate.backend.util.UUIDUtils;
 
 public class TestUUIDApi {
