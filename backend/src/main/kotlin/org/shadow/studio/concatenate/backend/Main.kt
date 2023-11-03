@@ -6,10 +6,11 @@ import java.io.*
 
 fun main(args: Array<String>) {
     val launcher = MinecraftClientLauncher(
-        JavaAdapter(),
-        mapOf("" to ""),
-        File("D:/Games/aloneg"),
-        MinecraftVersion(
+        adapter = JavaAdapter(),
+        clientConfig = MinecraftClientConfig("whiterasbk", "a", "b"),
+        environments = mapOf(),
+        workingDirectory = File("D:/Games/aloneg"),
+        version = MinecraftVersion(
             mcVersionID = "1.20",
             gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
             jsonProfile = File("D:/ProjectFiles/idea/Concatenate/backend/src/test/resources/1.20.json"),
@@ -17,8 +18,8 @@ fun main(args: Array<String>) {
         )
     )
 
-    val process = launcher.launch()
-    val inputStream = process.inputStream
+    val instance = launcher.launch()
+    val inputStream = instance.process.inputStream
 
     val reader = BufferedReader(InputStreamReader(inputStream))
     var line: String?
@@ -26,7 +27,7 @@ fun main(args: Array<String>) {
         println(line)
     }
 
-    val exitCode = process.waitFor()
+    val exitCode = instance.process.waitFor()
     println("MC Process exited with code: $exitCode")
     
 }

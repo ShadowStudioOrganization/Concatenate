@@ -51,7 +51,7 @@ fun mappingJvmArguments(jsonJvmArgs: List<Any?>, config: Map<String, String>): L
     }
 }
 
-fun mappingJvmMemoryArguments(config: Map<String, String>): List<String> {
+fun mappingExtraJvmArguments(config: Map<String, String>): List<String> {
     return buildList {
         config["initial_java_heap_size"]?.let { +"-Xms$it" }
         config["maximum_Java_heap_size"]?.let { +"-Xmx$it" }

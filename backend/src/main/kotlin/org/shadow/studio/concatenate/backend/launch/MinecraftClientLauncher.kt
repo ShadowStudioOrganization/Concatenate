@@ -1,38 +1,49 @@
 package org.shadow.studio.concatenate.backend.launch
 
+import org.shadow.studio.concatenate.backend.Concatenate
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
+import org.shadow.studio.concatenate.backend.data.MinecraftClientInstance
 import org.shadow.studio.concatenate.backend.util.*
+import org.shadow.studio.concatenate.backend.util.JsonObjectScope.get
 import java.io.File
 
 class MinecraftClientLauncher(
-    private val adapter: JavaAdapter,
+    adapter: JavaAdapter,
+    private val clientConfig: MinecraftClientConfig,
     override val environments: Map<String, String>,
     override val workingDirectory: File,
     override val version: MinecraftVersion,
 ) : MinecraftLauncher() {
 
     // Get the path of Java
-    override val program = adapter.getJavaPath(version.mcVersionID)
-
-    // Get the path of Root
-    val rootPath = RootPathUtils.getRootPath(workingDirectory)
-
-    val isVersionDivided = true;
+    override val program = adapter.getJavaBin(version.mcVersionID)
 
     private fun checkExists(file: File) {
         if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
     }
 
-    override fun launch(): Process {
+    private val librariesDirectoryName = "libraries"
+    private val assetsDirectoryName = "assets"
+    private val profileLibrariesKey = "libraries"
+    private val profileAssetsKey = "assets"
+    private val profileMainClassKey = "mainClass"
+
+    private fun findNativeDirectory(): File {
+        return File(workingDirectory, listOf("versions", version.versionName, "${version.versionName}-natives").joinToString(File.separator))
+    }
+
+    private fun findVersionIsolateDirectory(): File {
+        return File(workingDirectory, "versions" + File.separator + version.versionName)
+    }
+
+    override fun launch(): MinecraftClientInstance {
         val versionJar = version.getJarFile()
         val profile = parseJson(version.getJsonProfile())
 
-        val librariesRoot = File(workingDirectory, "libraries")
-        val gameDirectory = File(rootPath)
-        val assetsRoot = File(rootPath, "assets")
-        val nativesDirectory = File(workingDirectory,
-            listOf("versions", version.versionName, "${version.versionName}-natives").joinToString(File.separator)
-        )
+        val librariesRoot = File(workingDirectory, librariesDirectoryName)
+        val gameDirectory = if (version.isolated) findVersionIsolateDirectory() else workingDirectory
+        val assetsRoot = File(workingDirectory, assetsDirectoryName)
+        val nativesDirectory = findNativeDirectory()
         val javaBin = File(program)
 
         checkExists(librariesRoot)
@@ -42,58 +53,60 @@ class MinecraftClientLauncher(
         checkExists(javaBin)
 
         val classpath = buildList<String> {
-            +gatheringClasspath(profile["libraries"] as List<Map<String, *>>, librariesRoot)
+            +gatheringClasspath(profile[profileLibrariesKey] as List<Map<String, *>>, librariesRoot)
             +versionJar.absolutePath
         }.joinToString(File.pathSeparator)
 
-        val gameArgumentConfiguration = mapOf<String, String>(
-            "auth_player_name" to "whiterasbk",
+        val gameArgumentConfiguration = mapOf(
+            "auth_player_name" to clientConfig.authPlayerName,
             "version_name" to versionJar.nameWithoutExtension,
             "game_directory" to gameDirectory.absolutePath.wrapDoubleQuote(),
             "assets_root" to assetsRoot.absolutePath.wrapDoubleQuote(),
-            "assets_index_name" to profile["assets"].toString(),
-            "auth_uuid" to "114514",
-            "auth_access_token" to "114514",
-            "clientid" to "a",
-            "auth_xuid" to "a",
-            "user_type" to "am",
-            "version_type" to "am",
-        )
-        val gameRuleFeatures = mapOf<String, Boolean>(
+            "assets_index_name" to profile[profileAssetsKey].toString(),
+            "auth_uuid" to clientConfig.authUUID,
+            "auth_access_token" to clientConfig.authAccessToken,
+            "clientid" to clientConfig.clientId,
+            "auth_xuid" to clientConfig.authXXUID,
+            "user_type" to clientConfig.userType,
+            "version_type" to clientConfig.versionType
+        ) + clientConfig.featureGameArguments
 
-        )
+        val gameRuleFeatures = clientConfig.clientRuleFeatures
 
-        val jvmArgumentConfiguration = mapOf<String, String>(
+        val jvmArgumentConfiguration = mapOf(
             "classpath" to classpath.wrapDoubleQuote(),
-            "launcher_name" to "Concatenate",
+            "launcher_name" to Concatenate.launcherName,
             "natives_directory" to nativesDirectory.absolutePath.wrapDoubleQuote(),
-            "launcher_version" to "1"
+            "launcher_version" to Concatenate.launcherVersion
         )
 
-        val jvmMemoryConfiguration = mapOf<String, String>(
-            "use_g1gc" to "true"
-        )
+        // todo log
 
+        val profileJvmArgumentsObject = profile["arguments"]["jvm"] as List<Any?>
+        val profileGameArgumentsObject = profile["arguments"]["game"] as List<Any?>
 
         val command = jsonObjectConvGet {
             buildList<String> {
                 +javaBin.absolutePath
-                +mappingJvmMemoryArguments(jvmMemoryConfiguration)
-                +"-Xmx4412m"
+                +mappingExtraJvmArguments(clientConfig.extraJvmArguments)
                 +"-Dfile.encoding=GB18030"
                 +"-Dsun.stdout.encoding=GB18030"
                 +"-Dsun.stderr.encoding=GB18030"
                 +"-Djava.rmi.server.useCodebaseOnly=true"
                 +"-Dcom.sun.jndi.rmi.object.trustURLCodebase=false"
                 +"-Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false"
-                +mappingJvmArguments(profile["arguments"]["jvm"] as List<Any?>, jvmArgumentConfiguration)
-                +profile["mainClass"].toString()
-                +mappingGameArguments(profile["arguments"]["game"] as List<Any?>, gameArgumentConfiguration, gameRuleFeatures)
+                +mappingJvmArguments(profileJvmArgumentsObject, jvmArgumentConfiguration)
+                +profile[profileMainClassKey].toString()
+                +mappingGameArguments(profileGameArgumentsObject, gameArgumentConfiguration, gameRuleFeatures)
             }
         }
 
         val processBuilder = ProcessBuilder(command).directory(workingDirectory)
-        return processBuilder.start()
+
+        return MinecraftClientInstance(
+            process = processBuilder.start(),
+            processBuilder = processBuilder
+        )
     }
 
 }
