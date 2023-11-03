@@ -4,6 +4,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -25,8 +26,14 @@ object DownloadUtil {
         BrowserUserAgent()
     }
 
-    suspend fun getAsStream(url: String) {
-
+    suspend fun getAsStream(url: String, threads: Int): HttpResponse {
+        return withContext(Dispatchers.IO) {
+            val jobs = async {
+                val fileName = url.substringAfterLast("/")
+                defaultClient.get(url)
+            }
+            jobs.await()
+        }
     }
 
     suspend fun getAsStream(urls: List<String>, threads: Int = urls.size) {
