@@ -75,33 +75,25 @@ class MinecraftClientLauncher(
             "use_g1gc" to "true"
         )
 
-        val command = JsonUtilScope.run {
-            val gameArgList = mappingGameArguments(profile["arguments"]["game"] as List<Any?>, gameArgumentConfiguration, gameRuleFeatures)
-            val jvmArgList = mappingJvmArguments(profile["arguments"]["jvm"] as List<Any?>, jvmArgumentConfiguration)
-            val jvmMemArgs = mappingJvmMemoryArguments(jvmMemoryConfiguration)
 
-            mutableListOf<String>().apply {
-                add(javaBin.absolutePath)
-                addAll(jvmMemArgs)
-                add("-Xmx4412m")
-                add("-Dfile.encoding=GB18030")
-                add("-Dsun.stdout.encoding=GB18030")
-                add("-Dsun.stderr.encoding=GB18030")
-                add("-Djava.rmi.server.useCodebaseOnly=true")
-                add("-Dcom.sun.jndi.rmi.object.trustURLCodebase=false")
-                add("-Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false")
-                addAll(jvmArgList)
-                add(profile["mainClass"].toString())
-                addAll(gameArgList)
+        val command = jsonObjectConvGet {
+            buildList<String> {
+                +javaBin.absolutePath
+                +mappingJvmMemoryArguments(jvmMemoryConfiguration)
+                +"-Xmx4412m"
+                +"-Dfile.encoding=GB18030"
+                +"-Dsun.stdout.encoding=GB18030"
+                +"-Dsun.stderr.encoding=GB18030"
+                +"-Djava.rmi.server.useCodebaseOnly=true"
+                +"-Dcom.sun.jndi.rmi.object.trustURLCodebase=false"
+                +"-Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false"
+                +mappingJvmArguments(profile["arguments"]["jvm"] as List<Any?>, jvmArgumentConfiguration)
+                +profile["mainClass"].toString()
+                +mappingGameArguments(profile["arguments"]["game"] as List<Any?>, gameArgumentConfiguration, gameRuleFeatures)
             }
         }
 
-        val preCmd = command.joinToString(" ")
-        println(preCmd)
-
-        val processBuilder = ProcessBuilder(command)
-            .directory(workingDirectory)
-
+        val processBuilder = ProcessBuilder(command).directory(workingDirectory)
         return processBuilder.start()
     }
 

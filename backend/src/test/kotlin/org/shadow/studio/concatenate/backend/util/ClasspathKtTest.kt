@@ -17,7 +17,7 @@ class ClasspathKtTest {
         val mapper = jacksonObjectMapper()
         val map: Map<String, Any> = mapper.readValue(json)
 
-        JsonUtilScope.run {
+        jsonObjectConvGet {
             gatheringClasspath(map["libraries"] as List<Map<String, *>>, File("D:/Games/aloneg/libraries")).forEach {
                 assertTrue(File(it).exists())
             }

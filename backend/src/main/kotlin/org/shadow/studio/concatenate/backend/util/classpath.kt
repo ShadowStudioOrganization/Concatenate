@@ -3,8 +3,8 @@ package org.shadow.studio.concatenate.backend.util
 import java.io.File
 
 fun gatheringClasspath(libraries: List<Map<String, *>>, librariesRootFile: File, checkFile: Boolean = false): List<String> {
-    return mutableListOf<String>().apply classpath@{
-        JsonUtilScope.run {
+    return buildList classpath@{
+        jsonObjectConvGet {
             for (library in libraries) {
                 var isForbidden = false
                 library.havingKey<List<*>>("rules") { rules ->
@@ -30,7 +30,7 @@ fun gatheringClasspath(libraries: List<Map<String, *>>, librariesRootFile: File,
                                 val size = (artifact["size"] as String).toLong()
                             }
 
-                            this@classpath += absFile.absolutePath
+                            +absFile.absolutePath
                         }
                     }
                 }
