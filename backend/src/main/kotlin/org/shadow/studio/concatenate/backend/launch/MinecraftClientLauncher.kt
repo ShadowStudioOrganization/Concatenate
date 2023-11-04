@@ -11,13 +11,13 @@ import java.io.File
 class MinecraftClientLauncher(
     adapter: JavaAdapter,
     private val clientConfig: MinecraftClientConfig,
-    override val environments: Map<String, String>,
     override val workingDirectory: File,
     override val version: MinecraftVersion,
+    override val environments: Map<String, String> = mapOf(),
 ) : MinecraftLauncher() {
 
     // Get the path of Java
-    override val program = adapter.getJavaBin(version.mcVersionID)
+    override val program = adapter.getJavaBin(version.versionId)
     private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
 
     private fun checkExists(file: File) {
@@ -32,6 +32,16 @@ class MinecraftClientLauncher(
 
     private fun findNativeDirectory(): File {
         return File(workingDirectory, listOf("versions", version.versionName, "${version.versionName}-natives").joinToString(File.separator))
+    }
+
+    private fun findLoggingConfigFile(profile: Map<String, *>): File {
+        return jsonObjectConvGet {
+            File(workingDirectory, listOf(
+                "versions",
+                version.versionName,
+                "log4j2.xml" // profile["logging"]["client"]["file"]["id"] as String + ".xml"
+            ).joinToString(File.separator))
+        }
     }
 
     private fun findVersionIsolateDirectory(): File {
@@ -75,6 +85,10 @@ class MinecraftClientLauncher(
 
         val gameRuleFeatures = clientConfig.clientRuleFeatures
 
+        val loggingConfiguration = mapOf(
+            "path" to findLoggingConfigFile(profile).absolutePath.wrapDoubleQuote()
+        )
+
         val jvmArgumentConfiguration = mapOf(
             "classpath" to classpath.wrapDoubleQuote(),
             "launcher_name" to Concatenate.launcherName,
@@ -82,24 +96,23 @@ class MinecraftClientLauncher(
             "launcher_version" to Concatenate.launcherVersion
         )
 
-        // todo log
-
         val profileJvmArgumentsObject = profile["arguments"]["jvm"] as List<Any?>
         val profileGameArgumentsObject = profile["arguments"]["game"] as List<Any?>
+        val profileLoggingArgumentsObject = profile["logging"] as Map<String, *>
 
         val command = jsonObjectConvGet {
             buildList<String> {
                 +javaBin.absolutePath
-                +mappingExtraJvmArguments(clientConfig.extraJvmArguments)
-                +"-Dfile.encoding=GB18030"
-                +"-Dsun.stdout.encoding=GB18030"
-                +"-Dsun.stderr.encoding=GB18030"
-                +"-Djava.rmi.server.useCodebaseOnly=true"
-                +"-Dcom.sun.jndi.rmi.object.trustURLCodebase=false"
-                +"-Dcom.sun.jndi.cosnaming.object.trustURLCodebase=false"
                 +mappingJvmArguments(profileJvmArgumentsObject, jvmArgumentConfiguration)
+                +mappingExtraJvmArguments(clientConfig.extraJvmArguments)
+                if (isEnableMinecraftLogging) {
+                    +mappingLoggingArguments(profileLoggingArgumentsObject, loggingConfiguration)
+                }
+                +"-Dminecraft.client.jar=${versionJar.absolutePath.wrapDoubleQuote()}"
+                +clientConfig.customJvmArguments
                 +profile[profileMainClassKey].toString()
                 +mappingGameArguments(profileGameArgumentsObject, gameArgumentConfiguration, gameRuleFeatures)
+                +clientConfig.customUserArguments
             }
         }
 
@@ -109,6 +122,12 @@ class MinecraftClientLauncher(
             process = processBuilder.start(),
             processBuilder = processBuilder
         )
+    }
+
+    private var isEnableMinecraftLogging = true
+
+    fun disableLogging() {
+        isEnableMinecraftLogging = false
     }
 
 }

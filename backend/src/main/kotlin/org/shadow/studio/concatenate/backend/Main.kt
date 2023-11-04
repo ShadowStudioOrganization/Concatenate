@@ -5,14 +5,16 @@ import org.shadow.studio.concatenate.backend.launch.*;
 import org.slf4j.LoggerFactory
 import java.io.*
 
-fun main(args: Array<String>) {
+fun main() {
+
+    val config = MinecraftClientConfig("whiterasbk", "a", "b")
+
     val launcher = MinecraftClientLauncher(
         adapter = JavaAdapter(),
-        clientConfig = MinecraftClientConfig("whiterasbk", "a", "b"),
-        environments = mapOf(),
+        clientConfig = config,
         workingDirectory = File("D:/Games/aloneg"),
         version = MinecraftVersion(
-            mcVersionID = "1.20",
+            versionId = "1.20",
             gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
             jsonProfile = File("D:/ProjectFiles/idea/Concatenate/backend/src/test/resources/1.20.json"),
             versionName = "1.20"

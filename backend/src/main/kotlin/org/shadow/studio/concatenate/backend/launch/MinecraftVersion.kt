@@ -3,7 +3,7 @@ package org.shadow.studio.concatenate.backend.launch
 import java.io.File
 
 class MinecraftVersion(
-    val mcVersionID: String,
+    val versionId: String,
     private val jsonProfile: File,
     private val gameJar: File,
     val versionName: String,
