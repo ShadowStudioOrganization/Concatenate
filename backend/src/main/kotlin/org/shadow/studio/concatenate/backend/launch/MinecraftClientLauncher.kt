@@ -5,6 +5,7 @@ import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
 import org.shadow.studio.concatenate.backend.data.MinecraftClientInstance
 import org.shadow.studio.concatenate.backend.util.*
 import org.shadow.studio.concatenate.backend.util.JsonObjectScope.get
+import org.slf4j.LoggerFactory
 import java.io.File
 
 class MinecraftClientLauncher(
@@ -17,6 +18,7 @@ class MinecraftClientLauncher(
 
     // Get the path of Java
     override val program = adapter.getJavaBin(version.mcVersionID)
+    private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
 
     private fun checkExists(file: File) {
         if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")

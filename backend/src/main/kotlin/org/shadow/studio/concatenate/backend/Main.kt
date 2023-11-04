@@ -2,6 +2,7 @@ package org.shadow.studio.concatenate.backend
 
 import org.shadow.studio.concatenate.backend.adapter.*;
 import org.shadow.studio.concatenate.backend.launch.*;
+import org.slf4j.LoggerFactory
 import java.io.*
 
 fun main(args: Array<String>) {
@@ -18,6 +19,9 @@ fun main(args: Array<String>) {
         )
     )
 
+    val logger = LoggerFactory.getLogger(::main.javaClass)
+
+    logger.info("Minecraft instance is starting")
     val instance = launcher.launch()
     val inputStream = instance.process.inputStream
 
@@ -28,6 +32,6 @@ fun main(args: Array<String>) {
     }
 
     val exitCode = instance.process.waitFor()
-    println("MC Process exited with code: $exitCode")
+    logger.info("Minecraft process exited with code: $exitCode")
     
 }
