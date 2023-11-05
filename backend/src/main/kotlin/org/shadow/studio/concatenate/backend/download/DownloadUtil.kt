@@ -38,17 +38,16 @@ object DownloadUtil {
 
     suspend fun getAsStream(url: String) {
 
-    }
-//        withContext(Dispatchers.IO) {
-////            val jobs = url ->
-////                async {
-////                    val fileName = url.substringAfterLast("/")
-////                    val k = defaultClient.get(url)
-////                }
-////            }
-//
-//
-//        }
+        withContext(Dispatchers.IO) {
+            val jobs = url ->
+                async {
+                    val fileName = url.substringAfterLast("/")
+                    val k = defaultClient.get(url)
+                }
+            }
+
+
+        }
     fun getUrlFlieName(url: String): String {
         return url.substringAfterLast("/")
     }
