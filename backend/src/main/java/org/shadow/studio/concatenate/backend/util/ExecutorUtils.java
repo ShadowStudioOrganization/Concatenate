@@ -42,4 +42,18 @@ public class ExecutorUtils {
         input.close();
         output.close();
     }
+    public static void downloadFromUrl(String url, String filename) throws IOException {
+        URL Url = new URL(url);
+        URLConnection connection = Url.openConnection();
+        InputStream input = connection.getInputStream();
+        OutputStream output = new FileOutputStream(filename);
+        System.out.println("正在下载:" + filename);
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = input.read(buffer)) != -1) {
+            output.write(buffer, 0, bytesRead);
+        }
+        input.close();
+        output.close();
+    }
 }

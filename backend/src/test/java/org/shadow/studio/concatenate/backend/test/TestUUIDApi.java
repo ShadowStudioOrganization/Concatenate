@@ -13,6 +13,8 @@ public class TestUUIDApi {
     public void UUIDtest() {
         String username = "G_Breeze";
         Assertions.assertNotNull(UUIDUtils.getUUIDByUsername(username));
+        String uuid = UUIDUtils.getUUIDByUsername(username);
+        Assertions.assertTrue(UUIDUtils.getSkinByUUID(uuid));
     }
     @Test
     public void test() throws InterruptedException, IOException {
@@ -20,6 +22,6 @@ public class TestUUIDApi {
                 "https://download-cdn.jetbrains.com/idea/ideaIU-2023.2.4.win.zip",
                 "https://www.jb51.net/article/165676.htm"
         };
-        ExecutorUtils.threadPollDownload(urls);
+        Assertions.assertTrue(ExecutorUtils.threadPollDownload(urls));
     }
 }
