@@ -19,42 +19,12 @@ class MinecraftClientLauncher(
     // Get the path of Java
     override val program = adapter.getJavaBin(version.versionId)
     private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
-
-    private fun checkExists(file: File) {
-         if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
-    }
-
     private val librariesDirectoryName = "libraries"
     private val assetsDirectoryName = "assets"
     private val profileLibrariesKey = "libraries"
     private val profileAssetsKey = "assets"
     private val profileMainClassKey = "mainClass"
-
-    private fun findNativeDirectory(): File {
-        return File(workingDirectory, listOf("versions", version.versionName, "${version.versionName}-natives").joinToString(File.separator))
-    }
-
-    private fun findLoggingConfigFile(profile: Map<String, *>): File {
-        return jsonObjectConvGet {
-            File(workingDirectory, listOf(
-                "versions",
-                version.versionName,
-                "log4j2.xml" // profile["logging"]["client"]["file"]["id"] as String + ".xml"
-            ).joinToString(File.separator))
-        }
-    }
-
-    private fun findVersionIsolateDirectory(): File {
-        return File(workingDirectory, "versions" + File.separator + version.versionName)
-    }
-
-    private fun findAssetsDirectory(): File {
-        return File(workingDirectory, "assets")
-    }
-
-    private fun findAssetIndexJson(assetsIndex: String): File {
-        return File(findAssetsDirectory(), listOf("indexes", "$assetsIndex.json").joinToString(File.separator))
-    }
+    private var isEnableMinecraftLogging = true
 
     override fun launch(): MinecraftClientInstance = jsonObjectConvGet {
         val profile = parseJson(version.getJsonProfile())
@@ -155,6 +125,40 @@ class MinecraftClientLauncher(
         )
     }
 
+    private fun checkExists(file: File) {
+         if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
+    }
+
+    private fun findNativeDirectory(): File {
+        return File(workingDirectory, listOf("versions", version.versionName, "${version.versionName}-natives").joinToString(File.separator))
+    }
+
+    private fun findLoggingConfigFile(profile: Map<String, *>): File {
+        return jsonObjectConvGet {
+            File(workingDirectory, listOf(
+                "versions",
+                version.versionName,
+                "log4j2.xml" // profile["logging"]["client"]["file"]["id"] as String + ".xml"
+            ).joinToString(File.separator))
+        }
+    }
+
+    private fun findVersionIsolateDirectory(): File {
+        return File(workingDirectory, "versions" + File.separator + version.versionName)
+    }
+
+    private fun findAssetsDirectory(): File {
+        return File(workingDirectory, "assets")
+    }
+
+    private fun findAssetIndexJson(assetsIndex: String): File {
+        return File(findAssetsDirectory(), listOf("indexes", "$assetsIndex.json").joinToString(File.separator))
+    }
+
+    private fun checkSum(file: File, size: Long, sha1: String): Boolean {
+        return file.length() == size && sha1 == calculateSHA1(file)
+    }
+
     private fun checkAssetsSum(indexJson: Map<String, *>): Boolean = jsonObjectConvGet {
         val objects = indexJson["objects"] as Map<String, Map<String, *>>
 
@@ -174,12 +178,6 @@ class MinecraftClientLauncher(
 
         isComplete
     }
-
-    private fun checkSum(file: File, size: Long, sha1: String): Boolean {
-        return file.length() == size && sha1 == calculateSHA1(file)
-    }
-
-    private var isEnableMinecraftLogging = true
 
     fun disableLoggingConfiguration() {
         isEnableMinecraftLogging = false
