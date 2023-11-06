@@ -110,8 +110,6 @@ public class LoginVerifyUtils {
             connection.setReadTimeout(15000);
             connection.setDoOutput(true);
             connection.setDoInput(true);
-            // set args and type
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             // send param
             DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
             wr.writeBytes(param);

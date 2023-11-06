@@ -36,7 +36,7 @@ object DownloadUtil {
         }
     }
 
-    fun getUrlFlieName(url: String): String {
+    fun getUrlFilename(url: String): String {
         return url.substringAfterLast("/")
     }
 }

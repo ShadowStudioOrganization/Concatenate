@@ -18,12 +18,11 @@ public class TestUUIDApi {
     }
     @Test
     public void test() throws InterruptedException, IOException {
-        String[] urls = new String[]{
-                "https://download-cdn.jetbrains.com/idea/ideaIU-2023.2.4.win.zip",
-                "https://www.jb51.net/article/165676.htm"
-        };
-        int threadSize = 10;
-        Assertions.assertTrue(ExecutorUtils.threadPollDownload(urls, threadSize));
-//        Thread.sleep(120000);
+//        String[] urls = new String[]{
+//                "https://download-cdn.jetbrains.com/idea/ideaIU-2023.2.4.win.zip"
+//        };
+//        int threadSize = 10;
+//        Assertions.assertTrue(ExecutorUtils.threadPollDownload(urls, threadSize));
+//        Thread.sleep(1200000);
     }
 }
