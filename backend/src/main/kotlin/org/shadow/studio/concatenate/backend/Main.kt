@@ -11,7 +11,7 @@ fun main() {
     val `1_20` = MinecraftVersion(
         versionId = "1.20",
         gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
-        jsonProfile = File("D:/ProjectFiles/idea/Concatenate/backend/src/test/resources/1.20.json"),
+        jsonProfile = File("D:/ProjectFiles/idea/Concatenate/backend/src/test/resources/version-profile/1.20.json"),
         versionName = "1.20"
     )
 
