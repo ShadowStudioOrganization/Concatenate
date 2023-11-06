@@ -3,6 +3,9 @@ package org.shadow.studio.concatenate.backend
 import org.shadow.studio.concatenate.backend.adapter.*;
 import org.shadow.studio.concatenate.backend.launch.*;
 import org.shadow.studio.concatenate.backend.util.globalLogger
+import org.shadow.studio.concatenate.backend.util.launch.MinecraftClientConfig
+import org.shadow.studio.concatenate.backend.util.launch.MinecraftClientLauncher
+import org.shadow.studio.concatenate.backend.util.launch.MinecraftVersion
 import java.io.*
 
 fun main() {

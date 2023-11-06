@@ -8,7 +8,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.shadow.studio.concatenate.backend.download.DownloadUtil;
 
 public class ExecutorUtils {
     public static Boolean threadPollDownload(String[] urls, int threadSize) {
@@ -34,9 +33,15 @@ public class ExecutorUtils {
     }
 
     public static void downloadFromUrl(String url) throws IOException {
-        String filename = DownloadUtil.INSTANCE.getUrlFlieName(url);
+        String filename = getUrlFilename(url);
         downloadFromUrl(url,filename);
     }
+
+    public static String getUrlFilename(String url) {
+        String[] arr = url.split("/");
+        return arr[arr.length - 1];
+    }
+
     public static void downloadFromUrl(String url, String filename) throws IOException {
         URL Url = new URL(url);
         URLConnection connection = Url.openConnection();

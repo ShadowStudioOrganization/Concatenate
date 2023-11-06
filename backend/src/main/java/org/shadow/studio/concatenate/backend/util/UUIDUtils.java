@@ -1,5 +1,7 @@
 package org.shadow.studio.concatenate.backend.util;
 
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,7 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Base64;
 
+import static com.fasterxml.jackson.module.kotlin.ExtensionsKt.jacksonObjectMapper;
+
 public class UUIDUtils {
+
+
     public static String getUUIDByUsername(String username) {
         try {
             Map<String, String> json = getJsonFromUrl("https://api.mojang.com/users/profiles/minecraft/", username);
