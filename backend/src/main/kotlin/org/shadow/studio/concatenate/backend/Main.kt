@@ -2,7 +2,7 @@ package org.shadow.studio.concatenate.backend
 
 import org.shadow.studio.concatenate.backend.adapter.*;
 import org.shadow.studio.concatenate.backend.launch.*;
-import org.slf4j.LoggerFactory
+import org.shadow.studio.concatenate.backend.util.globalLogger
 import java.io.*
 
 fun main() {
@@ -29,9 +29,9 @@ fun main() {
         version = `1_20`
     )
 
-    val logger = LoggerFactory.getLogger(::main.javaClass)
+    val logger = globalLogger
 
-    launcher.disableLogging()
+    launcher.disableLoggingConfiguration()
 
     logger.info("Minecraft instance is starting")
     val instance = launcher.launch()

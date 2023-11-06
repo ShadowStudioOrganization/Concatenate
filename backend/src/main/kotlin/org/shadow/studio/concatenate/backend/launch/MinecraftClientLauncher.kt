@@ -119,8 +119,15 @@ class MinecraftClientLauncher(
         }
 
         logger.debug("final arguments")
+        var isReachingAccessToken = false
         command.forEach {
-            logger.debug(it)
+
+            if (isReachingAccessToken) {
+                logger.debug("**********")
+                isReachingAccessToken = false
+            } else logger.debug(it)
+
+            if (it.trim() == "--accessToken") isReachingAccessToken = true
         }
 
         val processBuilder = ProcessBuilder(command).directory(workingDirectory)
@@ -133,7 +140,7 @@ class MinecraftClientLauncher(
 
     private var isEnableMinecraftLogging = true
 
-    fun disableLogging() {
+    fun disableLoggingConfiguration() {
         isEnableMinecraftLogging = false
     }
 
