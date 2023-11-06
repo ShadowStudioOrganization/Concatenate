@@ -13,7 +13,7 @@ class MinecraftClientLauncher(
     override val workingDirectory: File,
     override val version: MinecraftVersion,
     override val environments: Map<String, String> = mapOf(),
-    val isCheckFileIntegrity: Boolean = true
+    private val isCheckFileIntegrity: Boolean = true
 ) : MinecraftLauncher() {
 
     // Get the path of Java
@@ -123,6 +123,10 @@ class MinecraftClientLauncher(
             process = processBuilder.start(),
             processBuilder = processBuilder
         )
+    }
+
+    private fun releaseNativeLibraries() {
+
     }
 
     private fun checkExists(file: File) {

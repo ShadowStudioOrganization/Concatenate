@@ -1,16 +1,15 @@
 package org.shadow.studio.concatenate.backend
 
-import org.shadow.studio.concatenate.backend.adapter.*;
-import org.shadow.studio.concatenate.backend.launch.*;
+import org.shadow.studio.concatenate.backend.adapter.*
 import org.shadow.studio.concatenate.backend.util.globalLogger
-import org.shadow.studio.concatenate.backend.util.launch.MinecraftClientConfig
-import org.shadow.studio.concatenate.backend.util.launch.MinecraftClientLauncher
-import org.shadow.studio.concatenate.backend.util.launch.MinecraftVersion
+import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfig
+import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
+import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import java.io.*
 
 fun main() {
 
-    val config = MinecraftClientConfig("whiterasbk", "a", "b")
+    val config = MinecraftClientConfig("whiterasbk", "a"/*UUIDUtils.getFullUUID("whiterasbk")*/, "a")
     val `1_20` = MinecraftVersion(
         versionId = "1.20",
         gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
