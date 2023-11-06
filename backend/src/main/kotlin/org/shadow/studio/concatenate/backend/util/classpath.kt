@@ -48,6 +48,7 @@ fun gatheringClasspath(libraries: List<Map<String, *>>, librariesRootFile: File,
                         }
 
                         if (checkFile) {
+                            globalLogger.debug("checking sha1 of {}", file)
                             val real = calculateSHA1(file)
                             val expect = artifact.sha1
                             if (file.length() != artifact.size || expect != real) {
