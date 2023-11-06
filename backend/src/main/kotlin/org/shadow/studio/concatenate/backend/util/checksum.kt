@@ -1,9 +1,12 @@
 package org.shadow.studio.concatenate.backend.util
 
+import io.ktor.utils.io.jvm.javaio.*
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.nio.ByteBuffer
+import java.nio.channels.Channels
 import java.security.DigestInputStream
 import java.security.MessageDigest
 
@@ -16,28 +19,13 @@ fun checksumUsingSha1(filesWithSha1: Map<String, File>): Map<String, File> {
 fun calculateSHA1(file: File): String = calculateSHA1(file.inputStream())
 
 fun calculateSHA1(stream: InputStream): String {
+
     val sha1Digest = MessageDigest.getInstance("SHA-1")
-    println(sha1Digest.digest(stream.readBytes()).let {
-        StringBuilder().apply {
-            it.forEach { byte -> append(String.format("%02x", byte)) }
-        }.toString()
-    })
+    val buffer = ByteArray(1024 * 10 * 5)
 
-    DigestInputStream(stream, sha1Digest).use { dis ->
-        val buffer = ByteArray(8192)
-
-        var bytesRead: Int = dis.read(buffer)
-        
-//        while  {
-//            sha1Digest.update(buffer, 0, bytesRead)
-//        }
-
-        println(bytesRead)
-
-//        do {
-//            println(left)
-//            sha1Digest.update(buffer)
-//        } while (left != -1)
+    var length: Int
+    while (stream.read(buffer).also { length = it } > 0) {
+        sha1Digest.update(buffer, 0, length)
     }
 
     val digestBytes = sha1Digest.digest()
