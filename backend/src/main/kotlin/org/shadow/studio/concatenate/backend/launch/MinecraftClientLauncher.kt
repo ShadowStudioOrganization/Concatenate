@@ -14,6 +14,7 @@ class MinecraftClientLauncher(
     override val workingDirectory: File,
     override val version: MinecraftVersion,
     override val environments: Map<String, String> = mapOf(),
+    val isCheckFileIntegrity: Boolean = true
 ) : MinecraftLauncher() {
 
     // Get the path of Java
@@ -21,7 +22,7 @@ class MinecraftClientLauncher(
     private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
 
     private fun checkExists(file: File) {
-        if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
+        // if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
     }
 
     private val librariesDirectoryName = "libraries"
@@ -48,6 +49,7 @@ class MinecraftClientLauncher(
         return File(workingDirectory, "versions" + File.separator + version.versionName)
     }
 
+    // todo 检查文件完整性
     override fun launch(): MinecraftClientInstance {
         val versionJar = version.getJarFile()
         val profile = parseJson(version.getJsonProfile())
@@ -65,7 +67,7 @@ class MinecraftClientLauncher(
         checkExists(javaBin)
 
         val classpath = buildList<String> {
-            +gatheringClasspath(profile[profileLibrariesKey] as List<Map<String, *>>, librariesRoot)
+            +gatheringClasspath(profile[profileLibrariesKey] as List<Map<String, *>>, librariesRoot, isCheckFileIntegrity)
             +versionJar.absolutePath
         }.joinToString(File.pathSeparator)
 
@@ -114,6 +116,11 @@ class MinecraftClientLauncher(
                 +mappingGameArguments(profileGameArgumentsObject, gameArgumentConfiguration, gameRuleFeatures)
                 +clientConfig.customUserArguments
             }
+        }
+
+        logger.debug("final arguments")
+        command.forEach {
+            logger.debug(it)
         }
 
         val processBuilder = ProcessBuilder(command).directory(workingDirectory)

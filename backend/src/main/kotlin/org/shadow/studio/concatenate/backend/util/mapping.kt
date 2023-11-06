@@ -3,7 +3,7 @@ package org.shadow.studio.concatenate.backend.util
 private fun String.placeHolderReplaceWith(pool: Map<String, String>): String {
     return replace(Regex("\\$\\{([^}]*)}")) {
         val key = it.groupValues[1]
-        if (!pool.containsKey(key)) error("$key is required!")// error handling here
+        if (!pool.containsKey(key)) error("$key is required!") // error handling here
         pool[key] ?: ""
     }
 }
@@ -11,7 +11,6 @@ private fun String.placeHolderReplaceWith(pool: Map<String, String>): String {
 fun mappingGameArguments(jsonGameArgs: List<Any?>, config: Map<String, String>, ruleFeatures: Map<String, Boolean> = mapOf()): List<String> {
     return buildList argList@{
         jsonObjectConvGet {
-//            val json =  as
             for (item in jsonGameArgs) {
                 if (item is String) {
                     +item.placeHolderReplaceWith(config)

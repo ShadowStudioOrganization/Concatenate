@@ -11,7 +11,6 @@ class MinecraftClientConfig(
     val versionType: String = "Concatenate",
     val userType: String = "msa"
 ) {
-
     val clientRuleFeatures = mutableMapOf<String, Boolean>()
     val featureGameArguments = mutableMapOf<String, String>()
     val extraJvmArguments = mutableMapOf<String, String>()

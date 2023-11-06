@@ -8,20 +8,30 @@ import java.io.*
 fun main() {
 
     val config = MinecraftClientConfig("whiterasbk", "a", "b")
+    val `1_20` = MinecraftVersion(
+        versionId = "1.20",
+        gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
+        jsonProfile = File("D:/ProjectFiles/idea/Concatenate/backend/src/test/resources/1.20.json"),
+        versionName = "1.20"
+    )
+
+    val `1_17_1` = MinecraftVersion(
+        versionId = "1.17.1",
+        gameJar = File("D:/Games/aloneg/versions/1.17.1/1.17.1.jar"),
+        jsonProfile = File("D:/Games/aloneg/versions/1.17.1/1.17.1.json"),
+        versionName = "1.17.1"
+    )
 
     val launcher = MinecraftClientLauncher(
         adapter = JavaAdapter(),
         clientConfig = config,
         workingDirectory = File("D:/Games/aloneg"),
-        version = MinecraftVersion(
-            versionId = "1.20",
-            gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
-            jsonProfile = File("D:/ProjectFiles/idea/Concatenate/backend/src/test/resources/1.20.json"),
-            versionName = "1.20"
-        )
+        version = `1_20`
     )
 
     val logger = LoggerFactory.getLogger(::main.javaClass)
+
+    launcher.disableLogging()
 
     logger.info("Minecraft instance is starting")
     val instance = launcher.launch()
@@ -31,6 +41,14 @@ fun main() {
     var line: String?
     while (reader.readLine().also { line = it } != null) {
         println(line)
+    }
+
+    val errorStream = instance.process.errorStream
+
+    val errReader = BufferedReader(InputStreamReader(errorStream))
+    var errLine: String?
+    while (errReader.readLine().also { errLine = it } != null) {
+        println(errLine)
     }
 
     val exitCode = instance.process.waitFor()

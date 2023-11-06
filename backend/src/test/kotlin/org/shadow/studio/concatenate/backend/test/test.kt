@@ -18,18 +18,26 @@ import org.eclipse.aether.resolution.DependencyRequest
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
+import org.shadow.studio.concatenate.backend.util.jsonObjectConvGet
+import org.shadow.studio.concatenate.backend.util.parseJson
 import java.io.File
+import java.io.InputStream
 
 
 fun main() {
 
-    val split = File("C:\\Users\\whiter\\Desktop\\cp.txt").readText().split(";")
-
-    split.forEach {
-        println(it)
+    val v = jsonObjectConvGet {
+        parseJson("")["properties"][0]["value"]
     }
 
-    testMavenResolver()
+
+//    val split = File("C:\\Users\\whiter\\Desktop\\cp.txt").readText().split(";")
+//
+//    split.forEach {
+//        println(it)
+//    }
+//
+//    testMavenResolver()
 
 //    val json = getResourceAsString("flandrebakapack-1.20.1.json")
 //    val mapper = jacksonObjectMapper()
@@ -101,12 +109,18 @@ private fun testMavenResolver() {
 
 }
 
-fun getResourceAsString(path: String): String {
+
+
+fun getResourceAsStream(path: String): InputStream {
     val inputStream = ::getResourceAsString.javaClass.classLoader.getResourceAsStream(path)
 
     if (inputStream != null) {
-        return inputStream.bufferedReader().use { it.readText() }
+        return inputStream
     } else {
-        error("File not found")
+        error("path $path not found")
     }
 }
+
+fun getResourceAsBytes(path: String): ByteArray = getResourceAsStream(path).use { it.readBytes() }
+
+fun getResourceAsString(path: String): String = getResourceAsStream(path).bufferedReader().use { it.readText() }
