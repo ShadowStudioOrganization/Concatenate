@@ -4,7 +4,6 @@ import org.shadow.studio.concatenate.backend.Concatenate
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
 import org.shadow.studio.concatenate.backend.data.MinecraftClientInstance
 import org.shadow.studio.concatenate.backend.util.*
-import org.shadow.studio.concatenate.backend.util.JsonObjectScope.get
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -22,7 +21,7 @@ class MinecraftClientLauncher(
     private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
 
     private fun checkExists(file: File) {
-        // if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
+         if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
     }
 
     private val librariesDirectoryName = "libraries"
@@ -49,10 +48,30 @@ class MinecraftClientLauncher(
         return File(workingDirectory, "versions" + File.separator + version.versionName)
     }
 
-    // todo 检查文件完整性
-    override fun launch(): MinecraftClientInstance {
-        val versionJar = version.getJarFile()
+    private fun findAssetsDirectory(): File {
+        return File(workingDirectory, "assets")
+    }
+
+    private fun findAssetIndexJson(assetsIndex: String): File {
+        return File(findAssetsDirectory(), listOf("indexes", "$assetsIndex.json").joinToString(File.separator))
+    }
+
+    override fun launch(): MinecraftClientInstance = jsonObjectConvGet {
         val profile = parseJson(version.getJsonProfile())
+        val versionJar = version.getJarFile()
+        val versionJarSha1 = profile["downloads"]["client"]["sha1"] as String
+        val versionJarSize = profile["downloads"]["client"]["size"].toString().toLong()
+
+        if (isCheckFileIntegrity) {
+            if (!checkSum(versionJar, versionJarSize, versionJarSha1))
+                error("version.jar file is damaged")
+
+            val assetsIndex = profile["assetIndex"]["id"] as String
+            val indexJsonFile = findAssetIndexJson(assetsIndex)
+
+            if (!checkAssetsSum(parseJson(indexJsonFile.readText())))
+                error("assets files not complete")
+        }
 
         val librariesRoot = File(workingDirectory, librariesDirectoryName)
         val gameDirectory = if (version.isolated) findVersionIsolateDirectory() else workingDirectory
@@ -63,7 +82,7 @@ class MinecraftClientLauncher(
         checkExists(librariesRoot)
         checkExists(gameDirectory)
         checkExists(assetsRoot)
-        checkExists(nativesDirectory)
+//        checkExists(nativesDirectory) // 1.20 seems to automatically create native directory
         checkExists(javaBin)
 
         val classpath = buildList<String> {
@@ -102,20 +121,18 @@ class MinecraftClientLauncher(
         val profileGameArgumentsObject = profile["arguments"]["game"] as List<Any?>
         val profileLoggingArgumentsObject = profile["logging"] as Map<String, *>
 
-        val command = jsonObjectConvGet {
-            buildList<String> {
-                +javaBin.absolutePath
-                +mappingJvmArguments(profileJvmArgumentsObject, jvmArgumentConfiguration)
-                +mappingExtraJvmArguments(clientConfig.extraJvmArguments)
-                if (isEnableMinecraftLogging) {
-                    +mappingLoggingArguments(profileLoggingArgumentsObject, loggingConfiguration)
-                }
-                +"-Dminecraft.client.jar=${versionJar.absolutePath.wrapDoubleQuote()}"
-                +clientConfig.customJvmArguments
-                +profile[profileMainClassKey].toString()
-                +mappingGameArguments(profileGameArgumentsObject, gameArgumentConfiguration, gameRuleFeatures)
-                +clientConfig.customUserArguments
+        val command = buildList<String> {
+            +javaBin.absolutePath
+            +mappingJvmArguments(profileJvmArgumentsObject, jvmArgumentConfiguration)
+            +mappingExtraJvmArguments(clientConfig.extraJvmArguments)
+            if (isEnableMinecraftLogging) {
+                +mappingLoggingArguments(profileLoggingArgumentsObject, loggingConfiguration)
             }
+            +"-Dminecraft.client.jar=${versionJar.absolutePath.wrapDoubleQuote()}"
+            +clientConfig.customJvmArguments
+            +profile[profileMainClassKey].toString()
+            +mappingGameArguments(profileGameArgumentsObject, gameArgumentConfiguration, gameRuleFeatures)
+            +clientConfig.customUserArguments
         }
 
         logger.debug("final arguments")
@@ -136,6 +153,30 @@ class MinecraftClientLauncher(
             process = processBuilder.start(),
             processBuilder = processBuilder
         )
+    }
+
+    private fun checkAssetsSum(indexJson: Map<String, *>): Boolean = jsonObjectConvGet {
+        val objects = indexJson["objects"] as Map<String, Map<String, *>>
+
+        var isComplete = true
+        for (key in objects.keys) {
+            val item = objects[key]
+            val hash = item["hash"] as String
+            val size = item["size"].toString().toLong()
+
+            val assetFile = File(findAssetsDirectory(), listOf("objects", hash.substring(0..1), hash).joinToString(File.separator))
+            logger.debug("checking asset: {} at {}", key, assetFile.absolutePath)
+            if (size != assetFile.length() || calculateSHA1(assetFile) != hash) {
+                isComplete = false
+                break
+            }
+        }
+
+        isComplete
+    }
+
+    private fun checkSum(file: File, size: Long, sha1: String): Boolean {
+        return file.length() == size && sha1 == calculateSHA1(file)
     }
 
     private var isEnableMinecraftLogging = true
