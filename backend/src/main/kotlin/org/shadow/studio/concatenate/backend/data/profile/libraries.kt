@@ -1,46 +1,44 @@
 package org.shadow.studio.concatenate.backend.data.profile
 
-interface LibraryItem {
-    val name: String
-}
 
-class CommonLibraryItem(
-    override val name: String,
-    val downloads: Downloads,
+data class LibraryItem(
+    val name: String,
+    val downloads: Downloads?,
     val natives: Natives? = null,
-    val rules: List<Rule>? = null
-) : LibraryItem
+    val rules: List<Rule>? = null,
+    val url: String? = null
+)
 
-class FabricLibraryItem(override val name: String, val url: String) : LibraryItem
-
-class Downloads(
+data class Downloads(
     val artifact: Artifact,
     val classifiers: Classifiers? = null
 )
 
-class Rule(
+data class Rule(
     val action: String,
     val os: RuleOS?,
     val features: Map<String, Boolean>?
 )
 
-class RuleOS(
-    val name: String
+data class RuleOS(
+    val name: String?,
+    val arch: String?,
+    val version: String?
 )
 
-class Classifiers(
+data class Classifiers(
     val nativesWindows: Artifact?,
     val nativesMacos: Artifact?,
     val nativesLinux: Artifact?
 )
 
-class Natives(
+data class Natives(
     val osx: String?,
     val windows: String?,
     val linux: String?
 )
 
-class Artifact(
+data class Artifact(
     val path: String,
     val sha1: String,
     val size: Long,

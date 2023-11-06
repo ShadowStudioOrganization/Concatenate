@@ -12,7 +12,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("ch.qos.logback:logback-classic:1.4.11")
 
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
     implementation("org.apache.maven.resolver:maven-resolver-api:1.9.16")
     implementation("org.apache.maven:maven-resolver-provider:3.9.5")

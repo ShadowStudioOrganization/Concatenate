@@ -1,5 +1,45 @@
 package org.shadow.studio.concatenate.backend.util
 
+import org.shadow.studio.concatenate.backend.data.profile.Rule
+
+
+fun resolveLibraryRules(rules: List<Rule>, featurePool: Map<String, Boolean> = mapOf()): Boolean {
+
+    var allowFlag = 0
+    var disallowFlag = 0
+
+    for (rule in rules) {
+        when (rule.action) {
+            "allow" -> {
+                rule.features?.let { feature ->
+                    for (featureKey in feature.keys) {
+                        if (featurePool[featureKey] != feature[featureKey]) allowFlag ++
+                    }
+                }
+                rule.os?.let { osRule ->
+                    if (osRule.name != getSystemName()) allowFlag ++
+                    if (osRule.arch != getSystemArch()) allowFlag ++
+                    if (osRule.version != getSystemArch()) allowFlag ++
+                }
+            }
+
+            "disallow" -> {
+                var disa = true
+
+                rule.os?.let { os ->
+                    disa = os.name != getSystemName() && disa
+                    disa = os.arch != getSystemArch() && disa
+                    disa = os.version != getSystemArch() && disa
+
+                }
+            }
+        }
+    }
+
+    return allowFlag == 0 /*&& disallowFlag != 0*/
+}
+
+@Deprecated("use resolveLibraryRules")
 fun rulesJudging(rules: List<*>, featurePool: Map<String, Boolean> = mapOf()): Boolean {
     var judgeFlag = 0
 
@@ -41,8 +81,6 @@ fun rulesJudging(rules: List<*>, featurePool: Map<String, Boolean> = mapOf()): B
             }
         }
     }
-
-
 
     return judgeFlag == 0
 }
