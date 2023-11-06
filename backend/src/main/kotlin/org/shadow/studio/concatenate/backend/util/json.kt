@@ -20,7 +20,7 @@ object JsonObjectScope {
     }
 }
 
-fun <T> Map<*,*>.havingKey(key: String, action: (T) -> Unit) {
+inline fun <T> Map<*,*>.havingKey(key: String, action: (T) -> Unit) {
     if (containsKey(key)) {
         (this[key] as? T)?.let {
             action(it)

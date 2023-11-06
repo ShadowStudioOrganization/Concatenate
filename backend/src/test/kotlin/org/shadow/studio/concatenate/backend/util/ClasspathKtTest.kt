@@ -13,7 +13,7 @@ class ClasspathKtTest {
     @Test
     fun gatheringClasspathTest() {
 
-        val json = getResourceAsString("flandrebakapack-1.20.1.json")
+        val json = getResourceAsString("version-profile/flandrebakapack-1.20.1.json")
         val mapper = jacksonObjectMapper()
         val map: Map<String, Any> = mapper.readValue(json)
 
