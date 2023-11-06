@@ -22,6 +22,8 @@ public class TestUUIDApi {
                 "https://download-cdn.jetbrains.com/idea/ideaIU-2023.2.4.win.zip",
                 "https://www.jb51.net/article/165676.htm"
         };
-        Assertions.assertTrue(ExecutorUtils.threadPollDownload(urls));
+        int threadSize = 10;
+        Assertions.assertTrue(ExecutorUtils.threadPollDownload(urls, threadSize));
+//        Thread.sleep(120000);
     }
 }

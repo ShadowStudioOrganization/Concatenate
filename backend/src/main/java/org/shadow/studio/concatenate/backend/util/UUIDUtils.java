@@ -12,8 +12,8 @@ import java.util.Base64;
 public class UUIDUtils {
     public static String getUUIDByUsername(String username) {
         try {
-            Map<String, Object> json = getJsonFromUrl("https://api.mojang.com/users/profiles/minecraft/", username);
-            return (String) json.get("id");
+            Map<String, String> json = getJsonFromUrl("https://api.mojang.com/users/profiles/minecraft/", username);
+            return json.get("id");
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -33,13 +33,13 @@ public class UUIDUtils {
             Map<String, String> properties = (Map<String, String>) json.get("properties").get(0);
             Map<String, Object> jsonSkin = JsonKt.parseJson(decodeFromBase64(properties.get("value")));
             String username = (String) jsonSkin.get("profileName");
-            String urlSkin = "";
+            String urlSkin = jsonSkin.get("textures").toString().split("url=")[1];
             if (jsonSkin.get("textures").toString().split("url=").length > 2) {
-                urlSkin = jsonSkin.get("textures").toString().split("url=")[1].split("},")[0];
+                urlSkin = urlSkin.split("},")[0];
                 String urlCape = jsonSkin.get("textures").toString().split("url=")[2].split("}}")[0];
                 ExecutorUtils.downloadFromUrl(urlCape, username+"_cape.png");
             } else {
-                urlSkin = jsonSkin.get("textures").toString().split("url=")[1].split("}}")[0];
+                urlSkin = urlSkin.split("}}")[0];
             }
             ExecutorUtils.downloadFromUrl(urlSkin, username+"_skin.png");
             return true;
