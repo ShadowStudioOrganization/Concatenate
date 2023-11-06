@@ -21,6 +21,9 @@ public class LoginVerifyUtils {
     public void closeConnection() {
         connection.disconnect();
     }
+    public void setConRequestProperty(String key, String value) {
+        connection.setRequestProperty(key,value);
+    }
 
     public boolean Oauth() throws URISyntaxException {
         this.setUri("https://login.live.com/oauth20_authorize.srf" +
@@ -114,6 +117,7 @@ public class LoginVerifyUtils {
             wr.writeBytes(param);
             wr.close();
             // get response
+            System.out.println(connection.getResponseCode());
             if(connection.getResponseCode()==200){
                 is=connection.getInputStream();
                 if(is!=null){
