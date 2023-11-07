@@ -1,5 +1,11 @@
 package org.shadow.studio.concatenate.backend.util
 
+import com.fasterxml.jackson.module.kotlin.convertValue
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.shadow.studio.concatenate.backend.data.profile.Rule
+
+private val jacksonMapper = jacksonObjectMapper()
+
 private fun String.placeHolderReplaceWith(pool: Map<String, String>): String {
     return replace(Regex("\\$\\{([^}]*)}")) {
         val key = it.groupValues[1]
@@ -9,6 +15,7 @@ private fun String.placeHolderReplaceWith(pool: Map<String, String>): String {
 }
 
 fun mappingGameArguments(jsonGameArgs: List<Any?>, config: Map<String, String>, ruleFeatures: Map<String, Boolean> = mapOf()): List<String> {
+
     return buildList argList@{
         jsonObjectConvGet {
             for (item in jsonGameArgs) {
@@ -16,7 +23,8 @@ fun mappingGameArguments(jsonGameArgs: List<Any?>, config: Map<String, String>, 
                     +item.placeHolderReplaceWith(config)
                 } else {
                     // rules
-                    if (rulesJudging(item["rules"] as List<*>, ruleFeatures)) {
+                    val rules = jacksonMapper.convertValue<List<Rule>>(item["rules"]!!)
+                    if (resolveLibraryRules(rules, ruleFeatures)) {
                         val values = item["value"] as List<String>
                         values.forEach { +it.placeHolderReplaceWith(config) }
                     }
@@ -34,7 +42,8 @@ fun mappingJvmArguments(jsonJvmArgs: List<Any?>, config: Map<String, String>): L
                     +item.placeHolderReplaceWith(config)
                 else {
                     // rules
-                    if (rulesJudging(item["rules"] as List<*>)) {
+                    val rules = jacksonMapper.convertValue<List<Rule>>(item["rules"]!!)
+                    if (resolveLibraryRules(rules)) {
                         val values = item["value"]
                         if (values is String)
                             +values.placeHolderReplaceWith(config)
