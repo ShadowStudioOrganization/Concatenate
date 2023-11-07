@@ -21,9 +21,9 @@ data class Rule(
 )
 
 data class RuleOS(
-    val name: String?,
-    val arch: String?,
-    val version: String?
+    val name: String? = null,
+    val arch: String? = null,
+    val version: String? = null
 )
 
 data class Classifiers(

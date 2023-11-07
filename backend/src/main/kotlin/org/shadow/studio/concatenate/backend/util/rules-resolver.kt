@@ -3,40 +3,33 @@ package org.shadow.studio.concatenate.backend.util
 import org.shadow.studio.concatenate.backend.data.profile.Rule
 
 
-fun resolveLibraryRules(rules: List<Rule>, featurePool: Map<String, Boolean> = mapOf()): Boolean {
+private fun resolveSingleRules(rule: Rule, featurePool: Map<String, Boolean> = mapOf()): Boolean {
+    var flag = 0
 
-    var allowFlag = 0
-    var disallowFlag = 0
-
-    for (rule in rules) {
-        when (rule.action) {
-            "allow" -> {
-                rule.features?.let { feature ->
-                    for (featureKey in feature.keys) {
-                        if (featurePool[featureKey] != feature[featureKey]) allowFlag ++
-                    }
-                }
-                rule.os?.let { osRule ->
-                    if (osRule.name != getSystemName()) allowFlag ++
-                    if (osRule.arch != getSystemArch()) allowFlag ++
-                    if (osRule.version != getSystemArch()) allowFlag ++
-                }
-            }
-
-            "disallow" -> {
-                var disa = true
-
-                rule.os?.let { os ->
-                    disa = os.name != getSystemName() && disa
-                    disa = os.arch != getSystemArch() && disa
-                    disa = os.version != getSystemArch() && disa
-
-                }
-            }
+    rule.features?.let { feature ->
+        for (featureKey in feature.keys) {
+            if (featurePool[featureKey] != feature[featureKey]) flag ++
         }
     }
 
-    return allowFlag == 0 /*&& disallowFlag != 0*/
+    rule.os?.let { os ->
+        os.name?.let { if (it != getSystemName()) flag ++ }
+        os.arch?.let { if (it != getSystemArch()) flag ++ }
+//        os.version?.let{ if (it != getSystemVersion()) flag++ }
+        os.version?.let{ if (!it.toRegex().matches(getSystemVersion())) flag++ }
+    }
+
+    return if (rule.action == "allow") flag == 0 else flag != 0
+}
+
+fun resolveLibraryRules(rules: List<Rule>, featurePool: Map<String, Boolean> = mapOf()): Boolean {
+
+    var result: Boolean = true
+
+    for (rule in rules)
+         result = resolveSingleRules(rule, featurePool) && result
+
+    return result
 }
 
 @Deprecated("use resolveLibraryRules")
