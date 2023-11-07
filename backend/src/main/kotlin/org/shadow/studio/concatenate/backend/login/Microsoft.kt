@@ -1,21 +1,11 @@
 package org.shadow.studio.concatenate.backend.login
 
 import io.ktor.client.*
-import io.ktor.client.call.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.shadow.studio.concatenate.backend.util.JsonObjectScope.get
 import org.shadow.studio.concatenate.backend.util.parseJson
-
-
-//fun main() {
-//    getAccessToken("")
-//}
 
 fun getAccessToken(accessTokenMic: String) = runBlocking {
     val client = HttpClient(OkHttp) {
