@@ -67,19 +67,6 @@ fun gatheringClasspath(libraries: List<Map<String, *>>, librariesRootFile: File,
 
                     +file.absolutePath
                 }
-
-                library.natives?.let { natives ->
-                    when (getSystemName()) {
-                        "windows" -> {
-
-                        }
-                    }
-                }
-
-                library.downloads?.classifiers?.let { classifiers ->
-
-                }
-
             }
         }
     }

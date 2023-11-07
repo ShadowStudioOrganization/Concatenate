@@ -8,7 +8,6 @@ import java.util.zip.ZipInputStream
 
 fun unzip(zipFile: File, outputDir: File, filter: ((ZipEntry) -> Boolean)? = null) {
     val buffer = ByteArray(1024 * 50)
-    // outputDir.mkdirs()
     ZipInputStream(FileInputStream(zipFile)).use { zis ->
         var entry: ZipEntry? = zis.nextEntry
 
