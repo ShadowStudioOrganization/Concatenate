@@ -55,10 +55,17 @@ class MinecraftClientLauncher(
 //        checkExists(nativesDirectory) // 1.20 seems to automatically create native directory
         checkExists(javaBin)
 
+        val libraries = profile[profileLibrariesKey] as List<Map<String, *>>
         val classpath = buildList<String> {
-            +gatheringClasspath(profile[profileLibrariesKey] as List<Map<String, *>>, librariesRoot, isCheckFileIntegrity)
+            +gatheringClasspath(libraries, librariesRoot, isCheckFileIntegrity)
             +versionJar.absolutePath
         }.joinToString(File.pathSeparator)
+
+        if (!nativesDirectory.exists()) {
+            nativesDirectory.mkdir()
+            // up to 1.20 seems unnecessary
+        }
+        releaseNativeLibraries(libraries, librariesRoot, nativesDirectory)
 
         val gameArgumentConfiguration = mapOf(
             "auth_player_name" to clientConfig.authPlayerName,
@@ -123,10 +130,6 @@ class MinecraftClientLauncher(
             process = processBuilder.start(),
             processBuilder = processBuilder
         )
-    }
-
-    private fun releaseNativeLibraries() {
-
     }
 
     private fun checkExists(file: File) {

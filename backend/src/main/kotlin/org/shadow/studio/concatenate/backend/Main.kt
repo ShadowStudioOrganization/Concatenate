@@ -28,7 +28,7 @@ fun main() {
         adapter = JavaAdapter(),
         clientConfig = config,
         workingDirectory = File("D:/Games/aloneg"),
-        version = `1_20`
+        version = `1_17_1`
     )
 
     val logger = globalLogger

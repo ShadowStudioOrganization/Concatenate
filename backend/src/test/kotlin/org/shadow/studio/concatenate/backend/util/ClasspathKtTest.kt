@@ -24,4 +24,13 @@ class ClasspathKtTest {
         }
 
     }
+
+    @Test
+    fun testReleaseNativeLibrary() {
+        val json = getResourceAsString("version-profile/1.17.1.json")
+        val mapper = jacksonObjectMapper()
+        val map: Map<String, Any> = mapper.readValue(json)
+
+        releaseNativeLibraries(map["libraries"] as List<Map<String, *>>, File("D:/Games/aloneg/libraries"), File("D:\\ProjectFiles\\idea\\Concatenate\\backend\\build\\unzip-out"))
+    }
 }

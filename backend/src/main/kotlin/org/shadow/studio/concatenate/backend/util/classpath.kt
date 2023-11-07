@@ -5,6 +5,30 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 import java.io.File
 
+fun releaseNativeLibraries(libraries: List<Map<String, *>>, librariesRootFile: File, into: File, isExtractSha1: Boolean = false) {
+    eachAvailableLibrary(libraries) { library ->
+        library.downloads?.classifiers?.let { classifiers ->
+            classifiers.nativesWindows?.path?.let { path ->
+                unzip(File(librariesRootFile, path), into) { entry ->
+                    var flag = 0
+                    library.extract?.let { extract ->
+                        extract.exclude.forEach { exclude ->
+                            if (entry.name.startsWith(exclude)) flag ++
+                        }
+                    }
+
+                    if (entry.name.startsWith("META-INF/")) flag ++
+                    if (entry.name.endsWith(".txt")) flag ++
+                    if (entry.name.endsWith(".git")) flag ++
+                    if (!isExtractSha1 && entry.name.endsWith(".sha1")) flag ++
+
+                    flag == 0
+                }
+            }
+        }
+    }
+}
+
 inline fun eachAvailableLibrary(libraries: List<Map<String, *>>, action: (LibraryItem) -> Unit) {
     for (library in jacksonObjectMapper().convertValue<List<LibraryItem>>(libraries)) {
         var isForbidden = false
@@ -16,24 +40,6 @@ inline fun eachAvailableLibrary(libraries: List<Map<String, *>>, action: (Librar
         if (isForbidden) continue
 
         action(library)
-
-//            val name = library["name"] as String
-//            if (library.keys.size == 2 && library.keys.containsAll(listOf("name", "url"))) {
-//                // classic fabric
-//                val url = library["url"] as String
-//                // action(FabricLibraryItem(name, url))
-//            } else {
-//                val artifact = library["downloads"]["artifact"]
-//                val path = artifact["path"] as String
-//                val sha1 = artifact["sha1"] as String
-//                val size = artifact["size"].toString().toLong()
-//                val url = artifact["url"] as String
-//                action(
-//                    LibraryItem(
-//                        name, Downloads(Artifact(path, sha1, size, url))
-//                    )
-//                )
-//            }
     }
 }
 
