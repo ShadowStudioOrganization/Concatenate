@@ -21,19 +21,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.key.Key.Companion.R
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LastBaseline
+import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import org.shadow.studio.concatenate.frontend.homepage.startGame
+import org.shadow.studio.concatenate.frontend.homepage.navigationHomepage
+import java.io.InputStream
 
 @Composable
 @Preview
@@ -49,32 +54,33 @@ fun App() {
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 fun main() = application {
     var boxIndex by remember { mutableStateOf(0) }
+    var text1 by remember { mutableStateOf("管理") }
+    var text2 by remember { mutableStateOf("设置") }
 
 
-    Window(onCloseRequest = ::exitApplication, title = "Concatenate Minecraft Launcher") {
-        Scaffold(backgroundColor = Color.LightGray,
+    Window(onCloseRequest = ::exitApplication, title = "Concatenate Minecraft Launcher", resizable = false) {
+        Scaffold(modifier = Modifier.border(width = 1.dp, color = Color.DarkGray),
+            backgroundColor = Color.Black.copy(alpha = 0.8f),
             topBar = {
-                TopAppBar(backgroundColor = Color.LightGray.copy(alpha = 0.95f)) {
-                    val text1 by remember { mutableStateOf("首页") }
-                    val text2 by remember { mutableStateOf("管理") }
-                    val text3 by remember { mutableStateOf("设置") }
                     Row(verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()) {
                         Button(
-                            interactionSource = MutableInteractionSource(),
-                            enabled = true,
+                            modifier = Modifier.padding(start = 75.dp)
+                                .align(Alignment.CenterVertically)
+                                .height(55.dp)
+                                .border(width = 1.dp,
+                                    color = Color.DarkGray),
                             onClick = {
                                 boxIndex = 0
                             },
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor =  if(boxIndex == 0) Color.LightGray.copy(alpha = 1f) else Color.LightGray.copy(alpha = 0.95f),
-                                contentColor = if (boxIndex == 0) Color.Black else Color.Black.copy(alpha = 0.2f),
+                                backgroundColor =  if(boxIndex == 0) Color.LightGray.copy(alpha = 1f) else Color.White.copy(0.1f),
+                                contentColor = if (boxIndex == 0) Color.Black else Color.Black.copy(alpha = 0.4f),
                             ),
-                            shape = RoundedCornerShape(50,50,50,50),
+                            shape = RoundedCornerShape(0,0,0,0),
                             contentPadding = PaddingValues(
                                 start = 30.dp,
                                 top = 10.dp,
@@ -82,18 +88,23 @@ fun main() = application {
                                 bottom = 10.dp
                             )
                         ) {
-                            Text(text1)
+                            Text(fontSize = 15.sp
+                                ,text = "首页")
                         }
                         Button(
-                            enabled = true,
+                            modifier = Modifier.padding(start = 20.dp)
+                                .align(Alignment.CenterVertically)
+                                .height(55.dp)
+                                .border(width = 1.dp,
+                                    color = Color.DarkGray),
                             onClick = {
                                 boxIndex = 1
                             },
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor =  if(boxIndex == 1) Color.LightGray.copy(alpha = 1f) else Color.LightGray.copy(alpha = 0.95f),
-                                contentColor = if (boxIndex == 1) Color.Black else Color.Black.copy(alpha = 0.2f),
+                                backgroundColor =  if(boxIndex == 1) Color.LightGray.copy(alpha = 1f) else Color.White.copy(0.1f),
+                                contentColor = if (boxIndex == 1) Color.Black else Color.Black.copy(alpha = 0.4f),
                             ),
-                            shape = RoundedCornerShape(50,50,50,50),
+                            shape = RoundedCornerShape(0,0,0,0),
                             contentPadding = PaddingValues(
                                 start = 30.dp,
                                 top = 10.dp,
@@ -101,18 +112,23 @@ fun main() = application {
                                 bottom = 10.dp
                             )
                         ) {
-                            Text(text2)
+                            Text(fontSize = 15.sp
+                                ,text = "管理")
                         }
                         Button(
-                            enabled = true,
+                            modifier = Modifier.padding(start = 350.dp)
+                                .align(Alignment.CenterVertically)
+                                .height(55.dp)
+                                .border(width = 1.dp,
+                                    color = Color.DarkGray),
                             onClick = {
                                 boxIndex = 2
                             },
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor =  if(boxIndex == 2) Color.LightGray.copy(alpha = 1f) else Color.LightGray.copy(alpha = 0.95f),
-                                contentColor = if (boxIndex == 2) Color.Black else Color.Black.copy(alpha = 0.2f),
+                                backgroundColor =  if(boxIndex == 2) Color.LightGray.copy(alpha = 1f) else Color.White.copy(0.1f),
+                                contentColor = if (boxIndex == 2) Color.Black else Color.Black.copy(alpha = 0.4f),
                             ),
-                            shape = RoundedCornerShape(50,50,50,50),
+                            shape = RoundedCornerShape(0,0,0,0),
                             contentPadding = PaddingValues(
                                 start = 30.dp,
                                 top = 10.dp,
@@ -120,25 +136,64 @@ fun main() = application {
                                 bottom = 10.dp
                             )
                         ) {
-                            Text(text3)
+                            Text(fontSize = 15.sp
+                                ,text = "设置")
                         }
                     }
-                }
             }
         ) {
-            PaddingValues(
-                start = 100.dp
-            )
         }
         Box(
             modifier = Modifier.fillMaxSize()
-                .fillMaxHeight(0.9f)
-                .padding(top = 60.dp)
+                .padding(top = 55.dp)
         ) {
+            Image(
+                painter = painterResource("background.jpg"),
+                contentDescription = null,
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+                    .blur(
+                        radius = 2.dp,
+                        edgeTreatment = BlurredEdgeTreatment.Unbounded
+                    )
+                    .clip(RoundedCornerShape(2.dp))
+                    .alpha(0.85f)
+            )
             if (boxIndex == 0) {
+                navigationHomepage()
                 startGame()
+            } else if (boxIndex == 1) {
+                Button(onClick = {
+                    text1 = "管理(todo)"
+                }) {
+                    Text(text1)
+                }
+            } else if (boxIndex == 2) {
+                    Button(onClick = {
+                        text2 = "设置(todo)"
+                    }) {
+                        Text(text2)
+                    }
             }
         }
+    }
+}
+
+@Composable
+fun startGame() {
+    var text by remember { mutableStateOf("启动游戏") }
+    Button(modifier = Modifier.padding(start = 525.dp, top = 400.dp)
+        .width(200.dp)
+        .height(75.dp),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Color(0, 155, 0).copy(alpha = 0.7f),
+            contentColor = Color(35,35,35)
+        ),
+        onClick = {
+        text = "启动(todo...)"
+    }) {
+        Text(fontSize = 20.sp,
+            text = text)
     }
 }
 
