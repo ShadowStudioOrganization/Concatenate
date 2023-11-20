@@ -20,7 +20,6 @@ open class MinecraftResourceChecker {
     }
 
     open fun checkAssetsObjects(indexJsonFile: File, indexObjectRoot: File): Boolean {
-//        val objects =  // indexJson["objects"] as Map<String, Map<String, *>>
 
         val objects = jacksonObjectMapper().readTree(indexJsonFile).let { rootNode ->
             if (!rootNode.isObject) error("not an object")
@@ -39,20 +38,6 @@ open class MinecraftResourceChecker {
                 break
             }
         }
-
-//        var isComplete = true
-//        for (key in objects.keys) {
-//            val item = objects[key]
-//            val hash = item["hash"] as String
-//            val size = item["size"].toString().toLong()
-//
-//            val assetFile = File(resolver.resolveAccessRoot(), listOf("objects", hash.substring(0..1), hash).joinToString(File.separator))
-//            logger.debug("checking asset: {} at {}", key, assetFile.absolutePath)
-//            if (size != assetFile.length() || calculateSHA1(assetFile) != hash) {
-//                isComplete = false
-//                break
-//            }
-//        }
 
         return isComplete
     }

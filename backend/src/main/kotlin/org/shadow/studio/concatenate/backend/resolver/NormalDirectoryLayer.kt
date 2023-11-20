@@ -1,4 +1,4 @@
-package org.shadow.studio.concatenate.backend.fileresolve
+package org.shadow.studio.concatenate.backend.resolver
 
 import java.io.File
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
@@ -10,10 +10,6 @@ class NormalDirectoryLayer(
         get() = if (version.isolated)
             File(getGameVersionDirectory(), version.versionName)
         else workingDirectory
-
-    override fun getJsonProfileContent(): String {
-        return ""// version.getJsonProfile()
-    }
 
     override fun getGameVersionDirectory(): File {
         return File(workingDirectory, "versions")

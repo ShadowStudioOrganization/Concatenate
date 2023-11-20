@@ -1,4 +1,4 @@
-package org.shadow.studio.concatenate.backend.fileresolve
+package org.shadow.studio.concatenate.backend.resolver
 
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import java.io.File;
@@ -10,8 +10,6 @@ interface DirectoryLayer {
     val version: MinecraftVersion
 
     fun getGameVersionDirectory(): File
-
-    fun getJsonProfileContent(): String
 
     fun getMinecraftJar(): File
 

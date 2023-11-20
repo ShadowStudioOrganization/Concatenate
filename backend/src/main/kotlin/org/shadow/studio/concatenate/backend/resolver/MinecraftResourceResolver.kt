@@ -1,5 +1,5 @@
 
-package org.shadow.studio.concatenate.backend.fileresolve
+package org.shadow.studio.concatenate.backend.resolver
 
 import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
 import org.shadow.studio.concatenate.backend.data.profile.ComplexMinecraftArgument

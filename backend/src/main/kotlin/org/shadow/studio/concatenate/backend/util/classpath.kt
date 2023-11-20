@@ -40,33 +40,3 @@ inline fun eachAvailableLibrary(libraries: List<LibraryItem>, action: (LibraryIt
         action(library)
     }
 }
-/*
-
-fun gatheringClasspath(libraries: List<LibraryItem>, librariesRootFile: File, checkFile: Boolean = false): List<String> {
-    return buildList classpath@{
-        jsonObjectConvGet {
-            eachAvailableLibrary(libraries) { library ->
-
-                library.downloads?.let { downloads ->
-
-                    val artifact = downloads.artifact
-                    val file = File(librariesRootFile, artifact!!.path) // todo fix here
-                    if (!file.exists()) {
-                        error("$file not exists!") // todo throw an exception
-                    }
-
-                    if (checkFile) {
-                        globalLogger.debug("checking sha1 of {}", file)
-                        val real = calculateSHA1(file)
-                        val expect = artifact.sha1
-                        if (file.length() != artifact.size || expect != real) {
-                            error("check file failed with $file, expect: $expect, but real: $real") // todo throw an exception
-                        }
-                    }
-
-                    +file.absolutePath
-                }
-            }
-        }
-    }
-}*/
