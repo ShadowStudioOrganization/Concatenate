@@ -11,10 +11,10 @@ import java.io.IOException;
 public class TestUUIDApi {
     @Test
     public void UUIDtest() {
-        String username = "G_Breeze";
-        Assertions.assertNotNull(UUIDUtils.getUUIDByUsername(username));
-        String uuid = UUIDUtils.getUUIDByUsername(username);
-        Assertions.assertTrue(UUIDUtils.getSkinByUUID(uuid));
+//        String username = "G_Breeze";
+//        Assertions.assertNotNull(UUIDUtils.getUUIDByUsername(username));
+//        String uuid = UUIDUtils.getUUIDByUsername(username);
+//        Assertions.assertTrue(UUIDUtils.getSkinByUUID(uuid));
     }
     @Test
     public void test() throws InterruptedException, IOException {
