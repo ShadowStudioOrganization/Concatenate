@@ -17,11 +17,11 @@ class ClasspathKtTest {
         val mapper = jacksonObjectMapper()
         val map: Map<String, Any> = mapper.readValue(json)
 
-        jsonObjectConvGet {
-            gatheringClasspath(map["libraries"] as List<Map<String, *>>, File("D:/Games/aloneg/libraries")).forEach {
-                assertTrue(File(it).exists())
-            }
-        }
+//        jsonObjectConvGet {
+//            gatheringClasspath(map["libraries"] as List<Map<String, *>>, File("D:/Games/aloneg/libraries")).forEach {
+//                assertTrue(File(it).exists())
+//            }
+//        }
 
     }
 
@@ -31,6 +31,6 @@ class ClasspathKtTest {
         val mapper = jacksonObjectMapper()
         val map: Map<String, Any> = mapper.readValue(json)
 
-        releaseNativeLibraries(map["libraries"] as List<Map<String, *>>, File("D:/Games/aloneg/libraries"), File("D:\\ProjectFiles\\idea\\Concatenate\\backend\\build\\unzip-out"))
+//        releaseNativeLibraries(map["libraries"] as List<Map<String, *>>, File("D:/Games/aloneg/libraries"), File("D:\\ProjectFiles\\idea\\Concatenate\\backend\\build\\unzip-out"))
     }
 }

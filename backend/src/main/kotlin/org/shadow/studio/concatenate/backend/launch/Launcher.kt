@@ -1,6 +1,6 @@
 package org.shadow.studio.concatenate.backend.launch
 
-import org.shadow.studio.concatenate.backend.data.ProgramInstance
+import org.shadow.studio.concatenate.backend.data.launch.ProgramInstance
 import java.io.File
 
 interface Launcher {
@@ -11,5 +11,5 @@ interface Launcher {
 
     val workingDirectory: File
 
-    fun launch(): ProgramInstance
+    suspend fun launch(): ProgramInstance
 }

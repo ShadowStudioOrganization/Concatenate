@@ -2,6 +2,81 @@ package org.shadow.studio.concatenate.backend.data.profile
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
+data class JsonProfile(
+    val arguments: Arguments?,
+    val assetIndex: AssetIndex,
+    val assets: String,
+    val clientVersion: String,
+    val complianceLevel: Int,
+    val downloads: GameDownloads,
+    val id: String,
+    val javaVersion: JavaVersion?, // b1.9-pre6 missing
+    val logging: Logging?,
+    val libraries: List<LibraryItem>,
+    val mainClass: String,
+    val minimumLauncherVersion: Int,
+    val releaseTime: String,
+    val time: String,
+    val type: String,
+    val minecraftArguments: String?
+)
+
+data class Arguments(
+    val game: List<Any>,
+    val jvm: List<Any>
+)
+
+data class ComplexMinecraftArgument(
+    val rules: List<Rule>?,
+    val value: Any
+)
+
+data class AssetIndex(
+    val id: String,
+    val sha1: String,
+    val size: Long,
+    val totalSize: Long,
+    val url: String
+)
+
+data class GameDownloads(
+    val client: GameDownloadItem,
+    @JsonProperty("client_mappings")
+    val clientMappings: GameDownloadItem?,
+    val server: GameDownloadItem?,
+    @JsonProperty("server_mappings")
+    val serverMappings: GameDownloadItem?,
+    @JsonProperty("windows_server")
+    val windowsServer: GameDownloadItem?
+)
+
+data class JavaVersion(
+    val component: String,
+    val majorVersion: Int
+)
+
+data class Logging(
+    val client: ClientLogging
+)
+
+data class GameDownloadItem(
+    val sha1: String?, // b1.9-pre6 missing
+    val size: Long,
+    val url: String
+)
+
+data class ClientLogging(
+    val argument: String,
+    val `file`: File,
+    val type: String
+)
+
+data class File(
+    val id: String,
+    val sha1: String,
+    val size: Long,
+    val url: String
+)
 
 data class LibraryItem(
     val name: String,
@@ -17,7 +92,7 @@ data class Extract(
 )
 
 data class Downloads(
-    val artifact: Artifact,
+    val artifact: Artifact?,
     val classifiers: Classifiers? = null
 )
 
@@ -36,12 +111,24 @@ data class RuleOS(
 data class Classifiers(
     @JsonProperty("natives-windows")
     val nativesWindows: Artifact? = null,
+
     @JsonProperty("natives-osx")
     val nativesOSX: Artifact? = null,
+
     @JsonProperty("natives-macos")
     val nativesMacos: Artifact? = null,
+
     @JsonProperty("natives-linux")
-    val nativesLinux: Artifact? = null
+    val nativesLinux: Artifact? = null,
+
+    @JsonProperty("natives-windows-32")
+    val nativesWindows32: Artifact?,
+
+    @JsonProperty("natives-windows-64")
+    val nativesWindows64: Artifact?,
+
+    val javadoc: Artifact? = null,
+    val sources: Artifact? = null,
 )
 
 data class Natives(

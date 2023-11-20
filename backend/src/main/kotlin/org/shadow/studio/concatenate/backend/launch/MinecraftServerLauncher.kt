@@ -1,6 +1,6 @@
 package org.shadow.studio.concatenate.backend.launch
 
-import org.shadow.studio.concatenate.backend.data.MinecraftServerInstance
+import org.shadow.studio.concatenate.backend.data.launch.MinecraftServerInstance
 import java.io.File
 
 open class MinecraftServerLauncher(
@@ -9,7 +9,7 @@ open class MinecraftServerLauncher(
     override val workingDirectory: File,
     override val version: MinecraftVersion
 ) : MinecraftLauncher() {
-    override fun launch(): MinecraftServerInstance {
+    override suspend fun launch(): MinecraftServerInstance {
         TODO("Not yet implemented")
     }
 

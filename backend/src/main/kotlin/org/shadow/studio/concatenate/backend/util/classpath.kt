@@ -1,11 +1,9 @@
 package org.shadow.studio.concatenate.backend.util
 
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 import java.io.File
 
-fun releaseNativeLibraries(libraries: List<Map<String, *>>, librariesRootFile: File, into: File, isExtractSha1: Boolean = false) {
+fun releaseNativeLibraries(libraries: List<LibraryItem>, librariesRootFile: File, into: File, isExtractSha1: Boolean = false) {
     eachAvailableLibrary(libraries) { library ->
         library.downloads?.classifiers?.let { classifiers ->
             classifiers.nativesWindows?.path?.let { path ->
@@ -29,8 +27,8 @@ fun releaseNativeLibraries(libraries: List<Map<String, *>>, librariesRootFile: F
     }
 }
 
-inline fun eachAvailableLibrary(libraries: List<Map<String, *>>, action: (LibraryItem) -> Unit) {
-    for (library in jacksonObjectMapper().convertValue<List<LibraryItem>>(libraries)) {
+inline fun eachAvailableLibrary(libraries: List<LibraryItem>, action: (LibraryItem) -> Unit) {
+    for (library in libraries) {
         var isForbidden = false
 
         library.rules?.let { rules ->
@@ -42,8 +40,9 @@ inline fun eachAvailableLibrary(libraries: List<Map<String, *>>, action: (Librar
         action(library)
     }
 }
+/*
 
-fun gatheringClasspath(libraries: List<Map<String, *>>, librariesRootFile: File, checkFile: Boolean = false): List<String> {
+fun gatheringClasspath(libraries: List<LibraryItem>, librariesRootFile: File, checkFile: Boolean = false): List<String> {
     return buildList classpath@{
         jsonObjectConvGet {
             eachAvailableLibrary(libraries) { library ->
@@ -51,7 +50,7 @@ fun gatheringClasspath(libraries: List<Map<String, *>>, librariesRootFile: File,
                 library.downloads?.let { downloads ->
 
                     val artifact = downloads.artifact
-                    val file = File(librariesRootFile, artifact.path)
+                    val file = File(librariesRootFile, artifact!!.path) // todo fix here
                     if (!file.exists()) {
                         error("$file not exists!") // todo throw an exception
                     }
@@ -70,4 +69,4 @@ fun gatheringClasspath(libraries: List<Map<String, *>>, librariesRootFile: File,
             }
         }
     }
-}
+}*/

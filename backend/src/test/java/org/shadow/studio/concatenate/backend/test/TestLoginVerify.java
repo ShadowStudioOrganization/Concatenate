@@ -30,7 +30,7 @@ public class TestLoginVerify {
                 "&grant_type=authorization_code" +
                 "&redirect_uri=https://login.live.com/oauth20_desktop.srf" +
                 "&scope=service::user.auth.xboxlive.com::MBI_SSL ";
-        Map<String, Object> responseTokenJson = JsonKt.parseJson(login.doPost(arg1));
+        Map<String, Object> responseTokenJson = JsonKt.parseJsonToMap(login.doPost(arg1));
         String accessToken = (String) responseTokenJson.get("access_token");
         String refreshToken = (String) responseTokenJson.get("refresh_token");
         MicrosoftKt.getAccessToken(accessToken);

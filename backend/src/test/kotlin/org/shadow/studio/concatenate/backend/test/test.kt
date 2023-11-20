@@ -1,6 +1,9 @@
 package org.shadow.studio.concatenate.backend.test
 
 
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.eclipse.aether.DefaultRepositorySystemSession
 import org.eclipse.aether.RepositorySystem
@@ -10,7 +13,6 @@ import org.eclipse.aether.collection.CollectRequest
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory
 import org.eclipse.aether.graph.Dependency
 import org.eclipse.aether.graph.DependencyFilter
-import org.eclipse.aether.impl.DefaultServiceLocator
 import org.eclipse.aether.repository.LocalRepository
 import org.eclipse.aether.repository.Proxy
 import org.eclipse.aether.repository.RemoteRepository
@@ -18,17 +20,29 @@ import org.eclipse.aether.resolution.DependencyRequest
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
 import org.eclipse.aether.spi.connector.transport.TransporterFactory
 import org.eclipse.aether.transport.http.HttpTransporterFactory
-import org.shadow.studio.concatenate.backend.util.jsonObjectConvGet
-import org.shadow.studio.concatenate.backend.util.parseJson
-import java.io.File
+import org.shadow.studio.concatenate.backend.data.profile.Arguments
+import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
+import org.shadow.studio.concatenate.backend.serializer.MinecraftArgumentsDeserializer
 import java.io.InputStream
 
 
 fun main() {
 
-    val v = jsonObjectConvGet {
-        parseJson("")["properties"][0]["value"]
-    }
+
+    val objectMapper = jacksonObjectMapper()
+
+    val module = SimpleModule()
+    module.addDeserializer(Arguments::class.java, MinecraftArgumentsDeserializer())
+    objectMapper.registerModule(module)
+
+    val profile = objectMapper.readValue<JsonProfile>(
+        getResourceAsString("version-profile/rd-132211.json"))
+    println(profile)
+
+
+//    val v = jsonObjectConvGet {
+//        parseJson("")["properties"][0]["value"]
+//    }
 
 
 //    val split = File("C:\\Users\\whiter\\Desktop\\cp.txt").readText().split(";")

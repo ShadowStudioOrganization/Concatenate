@@ -1,19 +1,21 @@
 package org.shadow.studio.concatenate.backend.launch
 
+import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
 import org.shadow.studio.concatenate.backend.util.ListBuilder
 
-class MinecraftClientConfig(
-    val authPlayerName: String,
+class MinecraftClientConfiguration(
+/*    val authPlayerName: String,
     val authUUID: String,
     val authAccessToken: String,
-    val authXXUID: String = "\${auth_xuid}",
+    val authXXUID: String = "\${auth_xuid}",*/
     val clientId: String = "\${clientid}",
     val versionType: String = "Concatenate",
-    val userType: String = "msa"
+    val userType: String = "msa",
+    val minecraftExtraJvmArguments: MinecraftExtraJvmArguments = MinecraftExtraJvmArguments()
 ) {
     val clientRuleFeatures = mutableMapOf<String, Boolean>()
     val featureGameArguments = mutableMapOf<String, String>()
-    val extraJvmArguments = mutableMapOf<String, String>()
+//    val extraJvmArguments = mutableMapOf<String, String>()
     val customJvmArguments = mutableListOf<String>()
     val customUserArguments = mutableListOf<String>()
 
@@ -24,7 +26,7 @@ class MinecraftClientConfig(
     fun customUserArguments(block: ListBuilder<String>.() -> Unit) {
         block(ListBuilder(customUserArguments))
     }
-
+/*
     fun fileEncoding(encoding: String) {
         extraJvmArguments["file_encoding"] = encoding
     }
@@ -59,7 +61,7 @@ class MinecraftClientConfig(
 
     fun omitStacktraceInFastThrow(enable: Boolean) {
         extraJvmArguments["omit_stacktrace_in_fast_throw"] = enable.toString()
-    }
+    }*/
 
     fun enableFeature(name: String) {
         clientRuleFeatures[name] = true
