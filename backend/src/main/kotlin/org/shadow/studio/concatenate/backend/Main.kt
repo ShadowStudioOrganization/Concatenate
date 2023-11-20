@@ -5,11 +5,12 @@ import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfiguration
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
+import org.shadow.studio.concatenate.backend.login.OfflineMethod
 import java.io.*
 
 suspend fun main() {
 
-    val config = MinecraftClientConfiguration(/*"whiterasbk", "a"*//*UUIDUtils.getFullUUID("whiterasbk")*//*, "a"*/)
+    val config = MinecraftClientConfiguration()
     val `1_20` = MinecraftVersion(
         versionId = "1.20",
         gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
@@ -28,7 +29,8 @@ suspend fun main() {
         adapter = JavaAdapter(),
         clientCfg = config,
         workingDirectory = File("D:/Games/aloneg"),
-        version = `1_17_1`
+        version = `1_17_1`,
+        loginMethod = OfflineMethod("whiterasbk")
     )
 
     val logger = globalLogger

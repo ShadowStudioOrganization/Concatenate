@@ -14,6 +14,9 @@ import org.shadow.studio.concatenate.backend.util.*
 import org.slf4j.LoggerFactory
 import java.io.File
 
+/**
+ * @param isCheckFileIntegrity 启动前是否检查文件完整性
+ */
 class MinecraftClientLauncher(
     adapter: JavaAdapter,
     private val clientCfg: MinecraftClientConfiguration,
@@ -39,7 +42,6 @@ class MinecraftClientLauncher(
             checker.checkAssetsObjects(resolver.resolveAssetIndexJsonFile(), resolver.resolveAssetObjectsRoot())
             checker.checkClasspath(profile.libraries, resolver.resolveLibrariesRoot())
         }
-        val gameDirectory = resolver.resolveGameDirectory()
         val javaBin = File(program)
         checkExists(javaBin)
 
@@ -81,6 +83,7 @@ class MinecraftClientLauncher(
                     put("clientid", clientCfg.clientId)
                     put("user_type", clientCfg.userType)
                     put("version_type", clientCfg.versionType)
+                    put("game_directory", resolver.resolveGameDirectory().absolutePath.wrapDoubleQuote())
                     putAll(clientCfg.featureGameArguments)
                 },
                 clientCfg.clientRuleFeatures

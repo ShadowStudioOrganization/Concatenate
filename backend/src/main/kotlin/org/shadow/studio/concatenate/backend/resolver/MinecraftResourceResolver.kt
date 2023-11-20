@@ -15,7 +15,7 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
 
     open fun resolveGameJar(): File = layer.version.getJarFile()
 
-    open fun resolveAssetIndexJsonFile(): File = File(resolveAssetRoot(), listOf("indexes", resolveAssetIndex() + ".json").joinToString(File.pathSeparator))
+    open fun resolveAssetIndexJsonFile(): File = File(resolveAssetRoot(), listOf("indexes", resolveAssetIndex() + ".json").joinToString(File.separator))
 
     open fun resolveNatives(isExtractSha1: Boolean = false): File {
         val nr = layer.getNativeDirectory(true)
