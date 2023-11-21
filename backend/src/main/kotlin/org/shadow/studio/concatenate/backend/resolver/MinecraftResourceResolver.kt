@@ -10,8 +10,9 @@ import kotlin.collections.buildList
 open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
 
     private val profile = layer.version.profile
+    private val logger = globalLogger
 
-    open fun resolveAssetIndex(): String = layer.version.getAccessIndex()
+    open fun resolveAssetIndex(): String = layer.version.getAssetIndex()
 
     open fun resolveGameJar(): File = layer.version.getJarFile()
 
@@ -63,12 +64,12 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
         return nr
     }
 
-    open fun resolveClasspath(addingGameJar: Boolean = true): List<File> = buildList {
+    open fun resolveClasspath(addingGameJar: Boolean = true, checkFileExists: Boolean = true): List<File> = buildList {
         val lr = resolveLibrariesRoot()
         eachAvailableLibrary(profile.libraries) { library ->
             library.downloads?.artifact?.let { artifact ->
                 val file = File(lr, artifact.path)
-                if (!file.exists()) error("$file not exists!") // todo throw an exception
+                if (checkFileExists && !file.exists()) error("$file not exists!") // todo throw an exception
                 add(file)
             }
         }
@@ -84,6 +85,28 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
     open fun resolveComplexMinecraftArguments(gameConfig: Map<String, String>, ruleFeatures: Map<String, Boolean>): List<String> {
         return profile.arguments?.game?.let { gameArguments ->
             mappingComplexMinecraftArguments(gameArguments, gameConfig, ruleFeatures)
+        } ?: profile.minecraftArguments?.let { ma ->
+            logger.debug("lower version: ${layer.version.versionId} detected, minecraftArguments is not null.")
+            resolveLowVersionMinecraftArguments(ma, gameConfig)
+        } ?: run {
+            // maybe low version
+            TODO()
+        }
+    }
+
+    open fun resolveLowVersionMinecraftArguments(commandLine: String, gameConfig: Map<String, String>): List<String> {
+        return buildList<String> {
+            commandLine.split(" ").forEach { item ->
+                add(item.replaceDollarExpressions(gameConfig))
+            }
+        }
+    }
+
+    open fun resolveComplexJvmArguments(jvmConfig: Map<String, String>): List<String> {
+        return profile.arguments?.jvm?.let { jvmArguments ->
+            mappingComplexMinecraftArguments(jvmArguments, jvmConfig, mapOf())
+        } ?: profile.minecraftArguments?.let { _ ->
+            resolveLowVersionJvmArguments(jvmConfig)
         } ?: run {
             // maybe low version
             profile.minecraftArguments
@@ -91,14 +114,12 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
         }
     }
 
-    open fun resolveComplexJvmArguments(jvmConfig: Map<String, String>): List<String> {
-        return profile.arguments?.jvm?.let { jvmArguments ->
-            mappingComplexMinecraftArguments(jvmArguments, jvmConfig, mapOf())
-        } ?: run {
-            // maybe low version
-            profile.minecraftArguments
-            TODO()
-        }
+    open fun resolveLowVersionJvmArguments(jvmConfig: Map<String, String>): List<String> {
+        return listOf(
+            "-cp",
+            resolveClasspath(true).joinToString(File.pathSeparator) { it.absolutePath },
+            "-Djava.library.path=" + layer.getNativeDirectory(true)
+        )
     }
 
     open fun resolveLoggingArguments(loggingConfig: Map<String, String>): List<String> = buildList {
@@ -145,15 +166,5 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
                 }
             }
         }
-    }
-}
-
-
-
-private fun String.replaceDollarExpressions(pool: Map<String, String>): String {
-    return replace(Regex("\\$\\{([^}]*)}")) {
-        val key = it.groupValues[1]
-        if (!pool.containsKey(key)) error("$key is required!") // error handling here
-        pool[key] ?: ""
     }
 }

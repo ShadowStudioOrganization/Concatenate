@@ -30,18 +30,20 @@ class MinecraftClientLauncher(
 ) : MinecraftLauncher() {
 
     // Get the path of Java
-    override val program = adapter.getJavaBin(version.versionId)
+    override val program = adapter.getJavaBin(version)
     private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
     private var isConfiguratorMinecraftLogging = true
 
     override suspend fun launch(): MinecraftClientInstance = withContext(Dispatchers.IO) {
         val profile = version.profile
         val versionJar = resolver.resolveGameJar()
+
         if (isCheckFileIntegrity) {
             checker.checkVersionJar(profile, versionJar)
             checker.checkAssetsObjects(resolver.resolveAssetIndexJsonFile(), resolver.resolveAssetObjectsRoot())
             checker.checkClasspath(profile.libraries, resolver.resolveLibrariesRoot())
         }
+
         val javaBin = File(program)
         checkExists(javaBin)
 
@@ -51,7 +53,9 @@ class MinecraftClientLauncher(
 
         val command = buildList<String> {
             add(javaBin.absolutePath.wrapDoubleQuote())
+
             add(resolver.resolveComplexJvmArguments(buildMap {
+                put("version_name", version.versionName.wrapDoubleQuote())
                 put("classpath", resolver
                     .resolveClasspath(true)
                     .joinToString(File.pathSeparator) { it.absolutePath }
@@ -59,7 +63,9 @@ class MinecraftClientLauncher(
                 )
                 put("launcher_name", Concatenate.launcherName)
                 put("natives_directory", nativesDirectory.absolutePath.wrapDoubleQuote())
+                put("library_directory", resolver.resolveLibrariesRoot().absolutePath)
                 put("launcher_version", Concatenate.launcherVersion)
+                put("classpath_separator", File.pathSeparator)
             }))
             add(resolver.resolveExtraJvmArguments(clientCfg.minecraftExtraJvmArguments))
             if (isConfiguratorMinecraftLogging) {
@@ -70,13 +76,21 @@ class MinecraftClientLauncher(
             add("-Dminecraft.client.jar=" + versionJar.absolutePath.wrapDoubleQuote())
             add(clientCfg.customJvmArguments)
             add(loginMethod.insertJvmArguments())
+
             add(profile.mainClass)
+
             add(resolver.resolveComplexMinecraftArguments(
                 buildMap<String, String> {
                     put("auth_player_name", loginInfo.authPlayerName)
                     put("auth_uuid", loginInfo.authUUID)
                     put("auth_xuid", loginInfo.authXUID)
                     put("auth_access_token", loginInfo.authAccessToken)
+
+                    // low version
+                    put("user_properties", loginInfo.userProperties)
+                    put("auth_session", loginInfo.authSession)
+                    put("game_assets", resolver.resolveAssetRoot().absolutePath.wrapDoubleQuote())
+
                     put("version_name", versionJar.nameWithoutExtension)
                     put("assets_root", resolver.resolveAssetRoot().absolutePath.wrapDoubleQuote())
                     put("assets_index_name", profile.assetIndex.id)
@@ -84,6 +98,7 @@ class MinecraftClientLauncher(
                     put("user_type", clientCfg.userType)
                     put("version_type", clientCfg.versionType)
                     put("game_directory", resolver.resolveGameDirectory().absolutePath.wrapDoubleQuote())
+
                     putAll(clientCfg.featureGameArguments)
                 },
                 clientCfg.clientRuleFeatures

@@ -19,7 +19,9 @@ data class LoginInfo (
     val authPlayerName: String,
     val authUUID: String,
     val authAccessToken: String,
-    val authXUID: String
+    val authXUID: String,
+    val userProperties: String,
+    val authSession: String,
 )
 
 class OfflineMethod(private val playerName: String) : LoginMethod {
@@ -37,6 +39,8 @@ class OfflineMethod(private val playerName: String) : LoginMethod {
                     }
             },
             "concatenate_token_bingo_bingo_now",
-            "\${auth_xuid}"
+            "\${auth_xuid}",
+            "{}",
+            "1"
         )
 }

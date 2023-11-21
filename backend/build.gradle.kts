@@ -20,6 +20,9 @@ dependencies {
     implementation("org.apache.maven.resolver:maven-resolver-transport-http:1.9.16")
     implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.16")
 
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+
+
 }
 
 tasks.test {
