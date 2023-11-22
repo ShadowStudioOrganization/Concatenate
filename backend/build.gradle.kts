@@ -21,6 +21,12 @@ dependencies {
     implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.16")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+//    implementation("org.apache.tika:tika:2.9.1")
+//    implementation("jmimemagic:jmimemagic:0.1.2")
+
+//    implementation("commons-io:commons-io:2.15.0")
+
+
 
 
 }

@@ -1,7 +1,9 @@
 package org.shadow.studio.concatenate.backend.adapter
 
+
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
-import org.shadow.studio.concatenate.backend.util.*
+import org.shadow.studio.concatenate.backend.util.contains
+import org.shadow.studio.concatenate.backend.util.rangeTo
 
 
 /**
@@ -9,11 +11,11 @@ import org.shadow.studio.concatenate.backend.util.*
  * */
 class JavaAdapter {
     fun getJavaBin(version: MinecraftVersion): String {
-        return version.profile.javaVersion?.majorVersion?.let { javaVersion ->
-            when (javaVersion) {
+        return version.profile.javaVersion?.let { java ->
+            when (java.majorVersion) {
                 8 -> ""
             }
-            version.profile.javaVersion?.component
+
             ""
         } ?: when (version) {
             in "rd-132211".."" -> { "D:/Environments/java/8/bin/java.exe" }
@@ -22,3 +24,7 @@ class JavaAdapter {
         }
     }
 }
+
+
+
+
