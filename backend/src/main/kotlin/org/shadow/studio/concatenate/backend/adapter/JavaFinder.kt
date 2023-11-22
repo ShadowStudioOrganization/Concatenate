@@ -1,6 +1,7 @@
 package org.shadow.studio.concatenate.backend.adapter
 
 import org.shadow.studio.concatenate.backend.util.getSystemName
+import org.shadow.studio.concatenate.backend.util.listPaths
 import java.io.File
 import java.lang.StringBuilder
 import java.nio.file.Files
@@ -26,6 +27,17 @@ class JavaFinder {
 
         val javas = buildList<File> files@{
             buildList paths@{
+
+                this@paths.addAll(listPaths("C:", "Program Files", "Java", "*", "bin"))
+                this@paths.addAll(listPaths("C:", "Program Files", "AdoptOpenJDK", "*", "bin"))
+                this@paths.addAll(listPaths("C:", "Program Files", "OpenJDK", "*", "bin"))
+                this@paths.addAll(listPaths("C:", "Program Files", "Zulu", "*", "bin"))
+
+                this@paths.addAll(listPaths("usr", "lib", "jvm", "*", "bin"))
+                this@paths.addAll(listPaths("usr", "lib", "java", "*", "bin"))
+                this@paths.addAll(listPaths("usr", "lib", "java", "%java-\\d\\d?-openjdk-amd64%", "bin"))
+                this@paths.addAll(listPaths("Library", "Java", "JavaVirtualMachines", "*", "bin"))
+
                 this@paths.addAll(run {
                     if (getSystemName() == "windows")
                         System.getenv("Path")
@@ -57,76 +69,6 @@ class JavaFinder {
         }.distinct()
 
         javas.forEach(::println)
-
-
-
-    }
-
-    fun MutableList<String>.addPath(vararg items: String) {
-
-
-      /*  fun a(vararg names: String): List<List<String>> {
-            return buildList {
-
-                for ((index, name) in names.withIndex()) {
-                    if (name == "*" && index != names.lastIndex) {
-
-                    } else {
-                        buildList<String> {
-                            add(name)
-                        }
-                    }
-                }
-
-
-                buildString {
-                    for ((index, name) in names.withIndex()) {
-                        if (name == "*" && index != names.lastIndex) {
-                            *//*val basePath = a(*names.asList().subList(0, index).toTypedArray())
-                            File(basePath).listFiles()?.filter { it.isDirectory }?.forEach { dir ->
-
-                            }*//*
-                        } else {
-                             append(name)
-                             append(File.separator)
-                        }
-                    }
-                }
-
-            }
-        }
-
-
-
-        val f = mutableListOf<String>()
-        val s = StringBuilder()
-        for (item in items) {
-            if (item == "*") {
-                val collect =
-                    Files.list(Paths.get(s.toString())).map { it.absolutePathString() }.collect(Collectors.toList())
-                f.addAll(collect)
-            } else s.append(File.separator).append(item)
-        }
-*/
-
-        val retList = mutableListOf(mutableListOf(*items))
-
-        val iter = retList.iterator()
-
-        while (iter.hasNext()) {
-            val path = iter.next()
-            val indexOfStart = path.indexOfFirst { it == "*" }
-            if (indexOfStart != -1) {
-
-                val subFileName = File(path.subList(0, indexOfStart).joinToString(File.separator))
-                    .listFiles()
-                    ?.filter { it.exists() && it.isDirectory }
-                    ?.map { it.name }
-
-
-
-            }
-        }
 
 
 

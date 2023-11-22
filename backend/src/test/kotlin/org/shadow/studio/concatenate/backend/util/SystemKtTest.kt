@@ -16,5 +16,11 @@ class SystemKtTest {
         listPaths("D:", "Environments", "java", "*", "bin").forEach {
             println("${++c} -> $it")
         }
+
+        listPaths("C:", "Environments", "java", "*", "bin").forEach {
+            println("${++c} -> $it")
+        }
+
+
     }
 }

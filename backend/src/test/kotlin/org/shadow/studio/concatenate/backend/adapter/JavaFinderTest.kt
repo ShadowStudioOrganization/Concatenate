@@ -12,8 +12,7 @@ class JavaFinderTest {
 
     @Test
     fun findJava() {
-//        var c = 0
-//        println(aaa("D:", "Environments", "java", "*").joinToString { "\n${++c}->$it" })
+        JavaFinder().findJava()
     }
 
 
