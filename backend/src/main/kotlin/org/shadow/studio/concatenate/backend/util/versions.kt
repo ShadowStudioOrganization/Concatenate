@@ -1,5 +1,6 @@
 package org.shadow.studio.concatenate.backend.util
 
+import org.shadow.studio.concatenate.backend.adapter.JavaRuntimeLocation
 import org.shadow.studio.concatenate.backend.data.Version
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 
@@ -56,3 +57,5 @@ operator fun List<String>.contains(version: Version): Boolean = version.id in th
 
 @JvmName("stringListContainsMinecraftVersion")
 operator fun List<String>.contains(version: MinecraftVersion): Boolean = version.versionId in this
+
+operator fun IntRange.contains(jdkVersion: JavaRuntimeLocation): Boolean = jdkVersion.majorVersion in this

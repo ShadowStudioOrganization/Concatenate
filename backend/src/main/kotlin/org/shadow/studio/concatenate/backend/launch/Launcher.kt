@@ -5,8 +5,6 @@ import java.io.File
 
 interface Launcher {
 
-    val program: String
-
     val environments: Map<String, String>
 
     val workingDirectory: File

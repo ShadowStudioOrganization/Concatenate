@@ -9,18 +9,30 @@ import org.shadow.studio.concatenate.backend.util.rangeTo
 /**
  * this class is use for looking forward java
  * */
-class JavaAdapter {
-    fun getJavaBin(version: MinecraftVersion): String {
-        return version.profile.javaVersion?.let { java ->
-            when (java.majorVersion) {
-                8 -> ""
-            }
+open class JavaAdapter(private val finder: JavaFinder = JavaFinder()) {
 
-            ""
-        } ?: when (version) {
-            in "rd-132211".."" -> { "D:/Environments/java/8/bin/java.exe" }
-            // "1.2.5", "rd-132211", "inf-20100618", "1.12.2" -> "D:/Environments/java/8/bin/java.exe"
-            else -> "" //"D:/Environments/java/17/bin/java.exe"
+    open suspend fun getJavaBinary(version: MinecraftVersion): JavaRuntimeLocation? {
+
+        val candidate: List<JavaRuntimeLocation> = finder.find()
+
+        return version.profile.javaVersion?.let { java ->
+
+            candidate.find { it.majorVersion == java.majorVersion && it.is64bit }
+                ?: candidate.find { it.majorVersion == java.majorVersion }
+                ?: with(candidate.filter { it.is64bit }) {
+                    when (version) {
+                        // 1.12(17w13a) - 1.16.5(1.17-21w18a)
+                        in "17w13a".."21w18a" -> find { it.majorVersion == 8 } ?: find { it.majorVersion == 17 } ?: find { it.majorVersion > 8 }
+                        // 1.17(21w19a) - 1.17.1
+                        in "21w19a".."1.17.1" -> find { it.majorVersion == 16 } ?: find { it.majorVersion == 17 } ?: find { it.majorVersion > 16 }
+                        else -> {
+                            if (version >= "1.18-pre2")
+                                find { it.majorVersion == 17 } ?: find { it.majorVersion > 17 }
+                            else
+                                find { it.majorVersion == 8 }?: find { it.majorVersion == 17 }
+                        }
+                    }
+                }
         }
     }
 }

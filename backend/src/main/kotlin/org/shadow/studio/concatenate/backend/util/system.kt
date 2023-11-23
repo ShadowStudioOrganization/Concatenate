@@ -7,7 +7,7 @@ import kotlin.io.path.exists
 
 /**
  * list the representing path combined by items
- * @param items can be folder name, * or %regex%
+ * @param items can be folder name, * or %regex%, always start from root
  * @return all matches paths
  */
 fun listPaths(vararg items: String): List<String> {

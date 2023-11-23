@@ -18,7 +18,7 @@ import java.io.File
  * @param isCheckFileIntegrity 启动前是否检查文件完整性
  */
 class MinecraftClientLauncher(
-    adapter: JavaAdapter,
+    private val adapter: JavaAdapter,
     private val clientCfg: MinecraftClientConfiguration,
     override val workingDirectory: File,
     override val version: MinecraftVersion,
@@ -26,13 +26,11 @@ class MinecraftClientLauncher(
     private val loginMethod: LoginMethod = OfflineMethod("Steve"),
     private val isCheckFileIntegrity: Boolean = true,
     private val resolver: MinecraftResourceResolver = MinecraftResourceResolver(NormalDirectoryLayer(workingDirectory, version)),
-    private val checker: MinecraftResourceChecker = MinecraftResourceChecker()
+    private val checker: MinecraftResourceChecker = MinecraftResourceChecker(),
+    private val isConfiguratorMinecraftLogging: Boolean = false
 ) : MinecraftLauncher() {
 
-    // Get the path of Java
-    override val program = adapter.getJavaBin(version)
     private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
-    private var isConfiguratorMinecraftLogging = true
 
     override suspend fun launch(): MinecraftClientInstance = withContext(Dispatchers.IO) {
         val profile = version.profile
@@ -44,15 +42,14 @@ class MinecraftClientLauncher(
             checker.checkClasspath(profile.libraries, resolver.resolveLibrariesRoot())
         }
 
-        val javaBin = File(program)
-        checkExists(javaBin)
+        val javaBinary = adapter.getJavaBinary(version)?.path?.toFile() ?: error("no suitable java binary found.")
 
         val nativesDirectory = resolver.resolveNatives()
 
         val loginInfo = loginMethod.login()
 
         val command = buildList<String> {
-            add(javaBin.absolutePath.wrapDoubleQuote())
+            add(javaBinary.absolutePath.wrapDoubleQuote())
 
             add(resolver.resolveComplexJvmArguments(buildMap {
                 put("version_name", version.versionName.wrapDoubleQuote())
@@ -108,7 +105,11 @@ class MinecraftClientLauncher(
 
         debugCommands(command)
 
-        val processBuilder = ProcessBuilder(command).directory(workingDirectory)
+        val processBuilder = ProcessBuilder().apply {
+            command(command)
+            environment().putAll(environments)
+            directory(workingDirectory)
+        }
 
         MinecraftClientInstance(
             process = processBuilder.start(),
@@ -128,13 +129,4 @@ class MinecraftClientLauncher(
             if (it.trim() == "--accessToken") isReachingAccessToken = true
         }
     }
-
-    private fun checkExists(file: File) {
-         if (!file.exists()) error("file/dir ${file.absolutePath} is not exists")
-    }
-
-    fun disableLoggingConfiguration() {
-        isConfiguratorMinecraftLogging = false
-    }
-
 }

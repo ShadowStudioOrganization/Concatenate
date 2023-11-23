@@ -1,7 +1,5 @@
 package org.shadow.studio.concatenate.backend.util
 
-import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
-
 fun String.wrapDoubleQuote() = "\"" + this + "\""
 
 fun String.replaceDollarExpressions(pool: Map<String, String>): String {

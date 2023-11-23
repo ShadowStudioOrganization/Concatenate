@@ -2,6 +2,7 @@ package org.shadow.studio.concatenate.backend
 
 import kotlinx.coroutines.runBlocking
 import org.shadow.studio.concatenate.backend.adapter.*
+import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
 import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfiguration
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
@@ -11,7 +12,11 @@ import java.io.*
 
 fun main() = runBlocking {
 
-    val config = MinecraftClientConfiguration()
+    val config = MinecraftClientConfiguration(
+        minecraftExtraJvmArguments = MinecraftExtraJvmArguments(
+            fileEncoding = "GBK"
+        )
+    )
     val `1_20` = MinecraftVersion(
         versionName = "1.20",
         gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
@@ -76,13 +81,11 @@ fun main() = runBlocking {
         adapter = JavaAdapter(),
         clientCfg = config,
         workingDirectory = File("D:/Games/aloneg"),
-        version = `1_12_2`,
+        version = `1_20`,
         loginMethod = OfflineMethod("whiterasbk")
     )
 
     val logger = globalLogger
-
-    launcher.disableLoggingConfiguration()
 
     logger.info("Minecraft instance is starting")
     val instance = launcher.launch()
