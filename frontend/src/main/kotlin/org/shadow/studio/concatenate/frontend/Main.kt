@@ -62,17 +62,15 @@ fun main() = application {
 
 
     Window(onCloseRequest = ::exitApplication, title = "Concatenate Minecraft Launcher", resizable = false) {
-        Scaffold(modifier = Modifier.border(width = 1.dp, color = Color.DarkGray),
-            backgroundColor = Color.Black.copy(alpha = 0.8f),
+        Scaffold(modifier = Modifier.border(width = 1.dp, color = Color.White.copy(0f)),
+            backgroundColor = Color(10, 165, 230).copy(alpha = 0.8f),
             topBar = {
                     Row(verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()) {
                         Button(
                             modifier = Modifier.padding(start = 75.dp)
                                 .align(Alignment.CenterVertically)
-                                .height(55.dp)
-                                .border(width = 1.dp,
-                                    color = Color.DarkGray),
+                                .height(55.dp),
                             elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
                                 pressedElevation = 0.dp,
                                 disabledElevation = 0.dp,
@@ -82,7 +80,7 @@ fun main() = application {
                                 boxIndex = 0
                             },
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor =  if(boxIndex == 0) Color.LightGray.copy(alpha = 1f) else Color.White.copy(0.1f),
+                                backgroundColor =  if(boxIndex == 0) Color.White.copy(alpha = 0.7f) else Color.White.copy(0.1f),
                                 contentColor = if (boxIndex == 0) Color.Black else Color.Black.copy(alpha = 0.4f),
                             ),
                             shape = RoundedCornerShape(0,0,0,0),
@@ -99,9 +97,7 @@ fun main() = application {
                         Button(
                             modifier = Modifier.padding(start = 20.dp)
                                 .align(Alignment.CenterVertically)
-                                .height(55.dp)
-                                .border(width = 1.dp,
-                                    color = Color.DarkGray),
+                                .height(55.dp),
                             elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
                                 pressedElevation = 0.dp,
                                 disabledElevation = 0.dp,
@@ -111,7 +107,7 @@ fun main() = application {
                                 boxIndex = 1
                             },
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor =  if(boxIndex == 1) Color.LightGray.copy(alpha = 1f) else Color.White.copy(0.1f),
+                                backgroundColor =  if(boxIndex == 1) Color.White.copy(alpha = 0.7f) else Color.White.copy(0.1f),
                                 contentColor = if (boxIndex == 1) Color.Black else Color.Black.copy(alpha = 0.4f),
                             ),
                             shape = RoundedCornerShape(0,0,0,0),
@@ -128,9 +124,7 @@ fun main() = application {
                         Button(
                             modifier = Modifier.padding(start = 350.dp)
                                 .align(Alignment.CenterVertically)
-                                .height(55.dp)
-                                .border(width = 1.dp,
-                                    color = Color.DarkGray),
+                                .height(55.dp),
                             elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
                                 pressedElevation = 0.dp,
                                 disabledElevation = 0.dp,
@@ -140,7 +134,7 @@ fun main() = application {
                                 boxIndex = 2
                             },
                             colors = ButtonDefaults.buttonColors(
-                                backgroundColor =  if(boxIndex == 2) Color.LightGray.copy(alpha = 1f) else Color.White.copy(0.1f),
+                                backgroundColor =  if(boxIndex == 2) Color.White.copy(alpha = 0.7f) else Color.White.copy(0.1f),
                                 contentColor = if (boxIndex == 2) Color.Black else Color.Black.copy(alpha = 0.4f),
                             ),
                             shape = RoundedCornerShape(0,0,0,0),
@@ -161,22 +155,13 @@ fun main() = application {
         Box(
             modifier = Modifier.fillMaxSize()
                 .padding(top = 55.dp)
+                .background(color = Color.White)
         ) {
-            Image(
-                painter = painterResource("background.jpg"),
-                contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
-                    .blur(
-                        radius = 2.dp,
-                        edgeTreatment = BlurredEdgeTreatment.Unbounded
-                    )
-                    .clip(RoundedCornerShape(2.dp))
-                    .alpha(0.85f)
-            )
             if (boxIndex == 0) {
-                navigationHomepage()
-                startGame()
+                Row {
+                    navigationHomepage()
+                    startGame()
+                }
             } else if (boxIndex == 1) {
                 Button(onClick = {
                     text1 = "管理(todo)"
@@ -196,19 +181,33 @@ fun main() = application {
 
 @Composable
 fun startGame() {
-    var text by remember { mutableStateOf("启动游戏") }
-    Button(modifier = Modifier.padding(start = 525.dp, top = 400.dp)
-        .width(200.dp)
-        .height(75.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = Color(0, 155, 0).copy(alpha = 0.7f),
-            contentColor = Color(35,35,35)
-        ),
-        onClick = {
-        text = "启动(todo...)"
-    }) {
-        Text(fontSize = 20.sp,
-            text = text)
+    Box(modifier = Modifier) {
+//        Image(
+//            painter = painterResource("background.jpg"),
+//            contentDescription = null,
+//            contentScale = ContentScale.FillBounds,
+//            modifier = Modifier.fillMaxSize()
+//                .blur(radius = 2.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+//        )
+        var text by remember { mutableStateOf("启动游戏") }
+        Button(modifier = Modifier.padding(start = 325.dp, top = 400.dp)
+            .width(200.dp)
+            .height(75.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color(0, 155, 0).copy(alpha = 0.7f),
+                contentColor = Color(35,35,35)
+            ),
+            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                pressedElevation = 0.dp,
+                disabledElevation = 0.dp,
+                hoveredElevation = 2.dp,
+                focusedElevation = 0.dp),
+            onClick = {
+            text = "启动(todo...)"
+        }) {
+            Text(fontSize = 20.sp,
+                text = text)
+        }
     }
 }
 
