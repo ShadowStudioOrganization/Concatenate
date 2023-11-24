@@ -65,9 +65,6 @@ class ConcatenateDownloader(
 
     override suspend fun download(): ConcatQueue<DownloadTask> = withContext(Dispatchers.IO) {
 
-        val coroutineDispatcher = Executors.newFixedThreadPool(poolSize).asCoroutineDispatcher()
-        val coroutineScope = CoroutineScope(coroutineDispatcher)
-
         val taskBufferSize = taskBufferSizeAllocation(remoteFiles)
         logger.info("set task buffer size to $taskBufferSize")
 
@@ -82,31 +79,24 @@ class ConcatenateDownloader(
             logger.info("enqueued task with index: $index ==> $downloadTask")
         }
 
-        val coroutinePool = List(poolSize) {
-            coroutineScope.async {
-                while (true) {
-                    val task = queue.dequeue() ?: break
-                    try {
-                        rangedDownload(task)
-                        globalLogger.info("coroutine-$it downloaded range: ${task.range} sourceUrl: ${task.url} to local: ${task.localDestination}")
-                    } catch (e: Throwable) {
-                        globalLogger.error("task error occurred, reason: $e")
-                        if (task.ttl > 0) {
-                            queue.enqueue(task.apply { ttl -- })
-                            globalLogger.error("task with ttl: ${task.ttl} re-enqueued, fully info: $task")
-                        } else {
-                            failedTaskQueue.enqueue(task.apply { isFailed = true })
-                            globalLogger.error("task is failed, loaded to failedTaskQueue, fully info: $task")
-                        }
+        coroutineExecutorsAsync(poolSize) { id ->
+            while (true) {
+                val task = queue.dequeue() ?: break
+                try {
+                    rangedDownload(task)
+                    globalLogger.info("coroutine-$id downloaded range: ${task.range} sourceUrl: ${task.url} to local: ${task.localDestination}")
+                } catch (e: Throwable) {
+                    globalLogger.error("task error occurred, reason: $e")
+                    if (task.ttl > 0) {
+                        queue.enqueue(task.apply { ttl -- })
+                        globalLogger.error("task with ttl: ${task.ttl} re-enqueued, fully info: $task")
+                    } else {
+                        failedTaskQueue.enqueue(task.apply { isFailed = true })
+                        globalLogger.error("task is failed, loaded to failedTaskQueue, fully info: $task")
                     }
                 }
             }
         }
-
-        coroutinePool.forEach { it.await() }
-
-        // Shutdown the coroutine pool
-        coroutineDispatcher.close()
 
         failedTaskQueue
     }
