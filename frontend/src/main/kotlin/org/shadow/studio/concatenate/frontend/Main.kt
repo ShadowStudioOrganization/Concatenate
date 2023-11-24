@@ -73,6 +73,11 @@ fun main() = application {
                                 .height(55.dp)
                                 .border(width = 1.dp,
                                     color = Color.DarkGray),
+                            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                pressedElevation = 0.dp,
+                                disabledElevation = 0.dp,
+                                hoveredElevation = 2.dp,
+                                focusedElevation = 0.dp),
                             onClick = {
                                 boxIndex = 0
                             },
@@ -97,6 +102,11 @@ fun main() = application {
                                 .height(55.dp)
                                 .border(width = 1.dp,
                                     color = Color.DarkGray),
+                            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                pressedElevation = 0.dp,
+                                disabledElevation = 0.dp,
+                                hoveredElevation = 2.dp,
+                                focusedElevation = 0.dp),
                             onClick = {
                                 boxIndex = 1
                             },
@@ -121,6 +131,11 @@ fun main() = application {
                                 .height(55.dp)
                                 .border(width = 1.dp,
                                     color = Color.DarkGray),
+                            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                pressedElevation = 0.dp,
+                                disabledElevation = 0.dp,
+                                hoveredElevation = 2.dp,
+                                focusedElevation = 0.dp),
                             onClick = {
                                 boxIndex = 2
                             },
