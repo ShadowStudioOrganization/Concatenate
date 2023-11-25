@@ -1,5 +1,8 @@
 package org.shadow.studio.concatenate.frontend.homepage
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,20 +21,22 @@ import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.shadow.studio.concatenate.frontend.util.openUrl
 
 @Composable
 fun navigationHomepage() {
     Box(modifier = Modifier.fillMaxHeight()
-        .padding(start = 0.dp)
         .width(200.dp)
         .background(Color.LightGray.copy(0.25f))) {
         Column {
             Box(modifier = Modifier.fillMaxWidth()
-                .height(250.dp)) {
+                .height(275.dp)) {
                 Column {
                     val interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
                     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -45,55 +50,125 @@ fun navigationHomepage() {
                             .padding(top = 5.dp, bottom = 5.dp, end = 5.dp))
                     Box(modifier = Modifier.fillMaxWidth()
                         .hoverable(interactionSource = interactionSource, true)
-                        .height(75.dp)
                         .background(if (isHovered) Color.LightGray.copy(0.5f) else Color.Unspecified)){
-                        Row {
+                        Column(modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,) {
                             Image(
                                 painter = painterResource("G_Breeze_avatar.png"),
                                 contentDescription = null,
                                 contentScale = ContentScale.Fit,
-                                modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth(0.3f).padding(top = 15.dp, start = 10.dp)
+                                modifier = Modifier.fillMaxHeight(0.35f).fillMaxWidth(0.5f).padding(top = 15.dp)
                                     .clip(RoundedCornerShape(2.dp))
                             )
-                            Column {
-                                Text(modifier = Modifier.padding(top = 20.dp, start = 15.dp).width(75.dp),
-                                    fontSize = 14.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    text = "G_Breeze")
-                                Text(modifier = Modifier.padding(top = 5.dp, start = 15.dp).width(75.dp),
-                                    fontSize = 12.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = Color(0, 170, 230),
-                                    text = "微软")
-                            }
-                            Box(modifier = Modifier.fillMaxHeight(0.85f).padding(top = 15.dp).background(color = Color.White.copy(alpha = 0f))) {
-                                Button(modifier = Modifier.fillMaxHeight().width(45.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        backgroundColor = Color.White.copy(0f),
-                                        contentColor = Color.White.copy(0f)
-                                    ),
-                                    elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
-                                        pressedElevation = 0.dp,
-                                        disabledElevation = 0.dp,
-                                        hoveredElevation = 0.dp,
-                                        focusedElevation = 0.dp),
-                                    onClick = {
-                                        // TODO: login/switch user
-                                    }) {
+                            Text(textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 20.dp).width(150.dp),
+                                fontSize = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                text = "G_Breeze")
+                            Text(textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(top = 5.dp).width(95.dp),
+                                fontSize = 12.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = Color(0, 170, 230),
+                                text = "微软")
+                            Row(modifier = Modifier.fillMaxWidth(0.65f).padding(top = 18.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween) {
+                                Box(modifier = Modifier.size(height = 30.dp, width = 40.dp).padding(start = 0.dp)
+                                    .background(color = Color.White.copy(alpha = 0f))) {
+                                    Button(modifier = Modifier.fillMaxSize(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.LightGray.copy(0.35f),
+                                            contentColor = Color.White.copy(0f)
+                                        ),
+                                        elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                            pressedElevation = 0.dp,
+                                            disabledElevation = 0.dp,
+                                            hoveredElevation = 0.dp,
+                                            focusedElevation = 0.dp),
+                                        onClick = {
+                                            // TODO: download skin and cape
+                                        }) {
+                                    }
+                                    Image(painter = painterResource("icons/cloth.png"),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier.fillMaxSize(0.85f).padding(top = 5.dp, start = 5.dp))
                                 }
-                                Image(painter = painterResource("icons/pen.png"),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Inside,
-                                    modifier = Modifier.fillMaxSize(0.9f).padding(top = 10.dp))
+                                Box(modifier = Modifier.size(height = 30.dp, width = 40.dp).padding(start = 0.dp)
+                                    .background(color = Color.White.copy(alpha = 0f))) {
+                                    Button(modifier = Modifier.fillMaxSize(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.LightGray.copy(0.35f),
+                                            contentColor = Color.White.copy(0f)
+                                        ),
+                                        elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                            pressedElevation = 0.dp,
+                                            disabledElevation = 0.dp,
+                                            hoveredElevation = 0.dp,
+                                            focusedElevation = 0.dp),
+                                        onClick = {
+                                            // TODO: exit account
+                                        }) {
+                                    }
+                                    Image(painter = painterResource("icons/exit.png"),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier.fillMaxSize(0.85f).padding(top = 5.dp, start = 5.dp))
+                                }
+                            }
+                            Row(modifier = Modifier.fillMaxWidth(0.65f).padding(top = 2.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween) {
+                                Box(modifier = Modifier.fillMaxHeight().width(80.dp)
+                                    .background(color = Color.White.copy(alpha = 0f))) {
+                                    Button(modifier = Modifier.fillMaxHeight(0.8f).width(95.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.LightGray.copy(0.35f),
+                                            contentColor = Color.White.copy(0f)
+                                        ),
+                                        elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                            pressedElevation = 0.dp,
+                                            disabledElevation = 0.dp,
+                                            hoveredElevation = 0.dp,
+                                            focusedElevation = 0.dp),
+                                        onClick = {
+                                            openUrl("https://www.minecraft.net/zh-hans")
+                                        }) {
+                                        Text(textAlign = TextAlign.Center,
+                                            fontSize = 14.sp,
+                                            color = Color(0, 170, 230),
+                                            text = "官网")
+                                    }
+                                }
+                                Box(modifier = Modifier.fillMaxHeight().width(45.dp).padding(start = 5.dp)
+                                    .background(color = Color.White.copy(alpha = 0f))) {
+                                    Button(modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.LightGray.copy(0.35f),
+                                            contentColor = Color.White.copy(0f)
+                                        ),
+                                        elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                            pressedElevation = 0.dp,
+                                            disabledElevation = 0.dp,
+                                            hoveredElevation = 0.dp,
+                                            focusedElevation = 0.dp),
+                                        onClick = {
+                                            // TODO: set user
+                                        }) {
+                                    }
+                                    Image(painter = painterResource("icons/gear.png"),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier.fillMaxHeight(0.675f).width(65.dp).padding(top = 7.dp))
+                                }
                             }
                         }
                     }
                 }
             }
             Box(modifier = Modifier.fillMaxWidth()
-                .height(300.dp)) {
+                .height(200.dp)) {
                 Column {
                     val interactionSource1: MutableInteractionSource = remember { MutableInteractionSource() }
                     val isHovered1 by interactionSource1.collectIsHoveredAsState()

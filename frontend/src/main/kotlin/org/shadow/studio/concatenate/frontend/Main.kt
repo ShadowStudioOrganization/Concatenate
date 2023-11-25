@@ -1,6 +1,7 @@
 package org.shadow.studio.concatenate.frontend
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.*
 import androidx.compose.desktop.ui.tooling.preview.Preview
