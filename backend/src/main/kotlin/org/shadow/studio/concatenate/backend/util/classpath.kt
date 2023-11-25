@@ -27,6 +27,23 @@ fun releaseNativeLibraries(libraries: List<LibraryItem>, librariesRootFile: File
     }
 }
 
+
+inline fun List<LibraryItem>.forEachAvailable(action: (LibraryItem) -> Unit) {
+    for (library in this) {
+        var isForbidden = false
+
+        library.rules?.let { rules ->
+            isForbidden = !resolveLibraryRules(rules)
+        }
+
+        if (isForbidden) continue
+
+        action(library)
+    }
+}
+
+
+@Deprecated("use List<LibraryItem>.forEachAvailable instead")
 inline fun eachAvailableLibrary(libraries: List<LibraryItem>, action: (LibraryItem) -> Unit) {
     for (library in libraries) {
         var isForbidden = false

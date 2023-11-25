@@ -6,14 +6,38 @@ data class RemoteFile(
     val url: String,
     val size: Long,
     val localDestination: Path,
-    val sha1: String?
-)
+    val sha1: String? = null
+) {
+    var splitsRanges: List<LongRange>? = null
+}
 
 data class DownloadTask(
     val range: LongRange,
-    val localDestination: Path,
-    val url: String,
-    val originalFileSize: Long,
+    val remoteFile: RemoteFile,
     var ttl: Int = 5,
-    var isFailed: Boolean = false
+    var state: DownloadTaskState = DownloadTaskState.Idle
+) {
+    fun isFullyAFile() = range.last - range.first + 1 == remoteFile.size
+}
+
+enum class DownloadTaskState {
+    Idle, Start, Processing, Success, Failed
+}
+
+class ProgressInfo(
+    val target: RemoteFile,
+    val taskRange: LongRange,
+    val bytesWrittenThisLoop: Long,
+    val bytesSoFarCountFromThisTask: Long,
+    val doneBytesSoFar: Long,
+    val totalBytes: Long
 )
+
+class DownloadProcess(filesize: Long) {
+
+    private val markLists: MutableList<Long> = mutableListOf()
+
+    fun mark(point: Long) {
+
+    }
+}

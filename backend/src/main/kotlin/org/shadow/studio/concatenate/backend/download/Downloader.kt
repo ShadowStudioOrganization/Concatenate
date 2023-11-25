@@ -61,15 +61,18 @@ interface Downloader {
             remoteFiles.forEach { file ->
                 if (file.size / taskMaxBufferSize == 0L) {
                     // 单次可运完
-                    this += DownloadTask(0L until file.size, file.localDestination, file.url, file.size, taskTTL)
+                    val range = 0L until file.size
+                    this += DownloadTask(range, file, taskTTL)
+                    file.splitsRanges = listOf(range)
                 } else {
                     // 分多次运
                     val count = file.size / taskMaxBufferSize
 
                     if (count > Int.MAX_VALUE) error("split count to big, max is ${Int.MAX_VALUE}")
 
-                    this += splitFileSize(file.size, count.toInt())
-                        .map { DownloadTask(it, file.localDestination, file.url, file.size, taskTTL) }
+                    val ranges = mutableListOf<LongRange>()
+                    this += splitFileSize(file.size, count.toInt()).map { DownloadTask(it.also { ranges += it }, file, taskTTL) }
+                    file.splitsRanges = ranges
                 }
             }
         }
@@ -77,7 +80,9 @@ interface Downloader {
     }
 
     fun defaultTaskBufferSizeAllocationMode(files: List<RemoteFile>): Long {
-        return files.maxOf { it.size }
+        val maxSize = files.maxOf { it.size }
+        val upto = 50 * 1024 * 1024L
+        return if (maxSize <= upto) maxSize else upto
     }
 }
 

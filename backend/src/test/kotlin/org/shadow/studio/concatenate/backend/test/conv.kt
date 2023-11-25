@@ -1,5 +1,6 @@
 package org.shadow.studio.concatenate.backend.test
 
+import ch.qos.logback.classic.Level
 import io.ktor.utils.io.jvm.nio.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
@@ -8,8 +9,10 @@ import kotlinx.coroutines.sync.withLock
 import org.shadow.studio.concatenate.backend.data.download.RemoteFile
 import org.shadow.studio.concatenate.backend.download.ConcatQueue
 import org.shadow.studio.concatenate.backend.download.ConcatenateDownloader
+import org.shadow.studio.concatenate.backend.download.LibrariesDownloader
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.*
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.RandomAccessFile
 import java.nio.file.Path
@@ -21,28 +24,25 @@ import kotlin.time.measureTime
 @OptIn(ExperimentalTime::class)
 suspend fun main(): Unit = withContext(Dispatchers.IO) {
     val time = measureTime {
-//        exc()
-//         NormalDownloader(globalClient).f()
+
 
         val baseDir = "D:/ProjectFiles/idea/Concatenate/backend/build/tmp/repos"
         val mv = MinecraftVersion("1.17.1", File("D:/Games/aloneg/versions/1.17.1/1.17.1.json"))
 
-        val downloader = ConcatenateDownloader().apply {
-            source {
-                eachAvailableLibrary(mv.profile.libraries) {
-                    it.downloads?.artifact?.let { artifact ->
-                        this += RemoteFile(
-                            artifact.url.let { url ->
-                                val origin = "https://libraries.minecraft.net/"
-                                val replaced = "https://bmclapi2.bangbang93.com/maven/"
-                                url.replaceFirst(origin, replaced)
-                            },
-                            artifact.size,
-                            Path.of(baseDir, artifact.path),
-                            artifact.sha1
-                        )
-                    }
-                }
+        val downloader = LibrariesDownloader(mv.profile.libraries, Path.of(baseDir))
+
+        downloader.apply {
+            val mLogger = LoggerFactory.getLogger("download")
+
+            mLogger as ch.qos.logback.classic.Logger
+            mLogger.level = Level.ERROR
+
+
+            setLogger(mLogger)
+
+            callback {
+                val k = it.doneBytesSoFar.toFloat() / it.totalBytes
+                globalLogger.info("progress: $k")
             }
         }
 

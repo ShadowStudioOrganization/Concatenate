@@ -5,12 +5,13 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.nio.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.shadow.studio.concatenate.backend.data.download.DownloadTask
+import org.shadow.studio.concatenate.backend.data.download.DownloadTaskState
 import org.slf4j.Logger
 import java.io.RandomAccessFile
 import java.net.HttpURLConnection
@@ -55,15 +56,36 @@ class URLDownloadMethodConfig {
 
 
 suspend fun ktorRangedDownloadAndTransferTo(
+    task: DownloadTask,
+    bufferSize: Long = DEFAULT_BUFFER_SIZE.toLong(),
+    client: HttpClient = globalClient,
+    logger: Logger = globalLogger,
+    callback: (suspend (Long, Long, Long) -> Unit)? = null
+) = ktorRangedDownloadAndTransferTo(
+    task.remoteFile.url,
+    task.range,
+    task.remoteFile.localDestination,
+    task.remoteFile.size,
+    bufferSize,
+    client,
+    logger,
+    callback
+)
+
+suspend fun ktorRangedDownloadAndTransferTo(
     url: String,
     range: IntRange,
     destination: Path,
     originalFileSize: Long,
     bufferSize: Long = DEFAULT_BUFFER_SIZE.toLong(),
     client: HttpClient = globalClient,
-    logger: Logger = globalLogger
-) = ktorRangedDownloadAndTransferTo(url, range.toLongRange(), destination, originalFileSize, bufferSize, client, logger)
+    logger: Logger = globalLogger,
+    callback: (suspend (Long, Long, Long) -> Unit)? = null,
+) = ktorRangedDownloadAndTransferTo(url, range.toLongRange(), destination, originalFileSize, bufferSize, client, logger, callback)
 
+/**
+ * @param callback when each copy finished, it will call this function, parameter1: bytes that written this loop, parameter2: bytes have written so far, parameter3: total bytes that need to be written
+ */
 suspend fun ktorRangedDownloadAndTransferTo(
     url: String,
     range: LongRange,
@@ -71,14 +93,20 @@ suspend fun ktorRangedDownloadAndTransferTo(
     originalFileSize: Long,
     bufferSize: Long = DEFAULT_BUFFER_SIZE.toLong(),
     client: HttpClient = globalClient,
-    logger: Logger = globalLogger
+    logger: Logger = globalLogger,
+    callback: (suspend (Long, Long, Long) -> Unit)? = null,
 ) {
     client.prepareGet(url) {
-        headers {
-            append("Range", "bytes=${range.first}-${range.last}")
+        if (range.last - range.first + 1 != originalFileSize) {
+            // full content file task
+            headers {
+                append("Range", "bytes=${range.first}-${range.last}")
+            }
         }
     }.execute { httpResponse ->
         val channel: ByteReadChannel = httpResponse.bodyAsChannel()
+
+        if (Files.isDirectory(destination)) error("destination must be a file, which '$destination' is not")
 
         val file = RandomAccessFile(destination.toFile(), "rw")
 
@@ -95,11 +123,16 @@ suspend fun ktorRangedDownloadAndTransferTo(
         }
 
         file.seek(range.first)
+        var totalBytesWrittenSoFar = 0L
+        val rangeLength = range.last - range.first + 1
 
         while (!channel.isClosedForRead) {
             val packet = channel.readRemaining(bufferSize)
             while (!packet.isEmpty) {
+                val bytesWrittenThisLoop = packet.remaining
+                totalBytesWrittenSoFar += bytesWrittenThisLoop
                 file.channel.writePacket(packet)
+                callback?.invoke(bytesWrittenThisLoop, totalBytesWrittenSoFar, rangeLength)
             }
         }
 
