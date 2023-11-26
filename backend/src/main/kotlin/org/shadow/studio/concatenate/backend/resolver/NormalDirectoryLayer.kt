@@ -1,40 +1,42 @@
 package org.shadow.studio.concatenate.backend.resolver
 
 import java.io.File
-import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
+
 class NormalDirectoryLayer(
     override val workingDirectory: File,
-    override val version: MinecraftVersion
+    override val versionIsIsolated: Boolean,
+    override val versionName: String
 ): DirectoryLayer {
+
     override val gameDirectory: File
-        get() = if (version.isolated)
-            File(getGameVersionDirectory(), version.versionName)
+        get() = if (versionIsIsolated)
+            File(getGameVersionDirectory(), versionName)
         else workingDirectory
 
     override fun getGameVersionDirectory(): File {
         return File(workingDirectory, "versions")
     }
 
-    override fun getMinecraftJar(): File {
-        return File(getGameVersionDirectory(), version.versionName + ".jar")
+    override fun getMinecraftJarPosition(): File {
+        return File(getGameVersionDirectory(),  versionName + File.separator + "$versionName.jar")
+    }
+
+    override fun getMinecraftJsonProfilePosition(): File {
+        return File(getGameVersionDirectory(), versionName + File.separator + "$versionName.json")
     }
 
     override fun getLibrariesRoot(): File {
         return File(workingDirectory, "libraries")
     }
 
-    override fun getNativeDirectory(isAutoCreate: Boolean): File {
+    override fun getNativeDirectoryPosition(isAutoCreate: Boolean): File {
         val file = File(workingDirectory,
             listOf("versions",
-                version.versionName,
-                "${version.versionName}-natives")
+                versionName,
+                "${versionName}-natives")
                 .joinToString(File.separator))
         if (isAutoCreate && !file.exists()) file.mkdir()
         return file
-    }
-
-    override fun getAssetIndexFile(): File {
-        return File(getAssetRoot(), listOf("indexes", "${version.getAssetIndex()}.json").joinToString(File.separator))
     }
 
     override fun getAssetRoot(): File = File(workingDirectory, "assets")

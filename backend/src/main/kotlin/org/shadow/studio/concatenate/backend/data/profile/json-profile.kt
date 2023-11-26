@@ -7,7 +7,7 @@ data class JsonProfile(
     val assetIndex: AssetIndex,
     val assets: String,
     val clientVersion: String?,
-    val complianceLevel: Int,
+    val complianceLevel: Int?,
     val downloads: GameDownloads,
     val id: String,
     val javaVersion: JavaVersion?, // b1.9-pre6 missing
@@ -42,12 +42,12 @@ data class AssetIndex(
 data class GameDownloads(
     val client: GameDownloadItem,
     @JsonProperty("client_mappings")
-    val clientMappings: GameDownloadItem?,
-    val server: GameDownloadItem?,
+    val clientMappings: GameDownloadItem? = null,
+    val server: GameDownloadItem? = null,
     @JsonProperty("server_mappings")
-    val serverMappings: GameDownloadItem?,
+    val serverMappings: GameDownloadItem? = null,
     @JsonProperty("windows_server")
-    val windowsServer: GameDownloadItem?
+    val windowsServer: GameDownloadItem? = null
 )
 
 data class JavaVersion(
@@ -60,9 +60,9 @@ data class Logging(
 )
 
 data class GameDownloadItem(
-    val sha1: String?, // b1.9-pre6 missing
+    val url: String,
     val size: Long,
-    val url: String
+    val sha1: String? // b1.9-pre6 missing
 )
 
 data class ClientLogging(

@@ -3,23 +3,35 @@ package org.shadow.studio.concatenate.backend.resolver
 
 import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
 import org.shadow.studio.concatenate.backend.data.profile.ComplexMinecraftArgument
+import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.*
 import java.io.File
 import kotlin.collections.buildList
 
-open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
+open class MinecraftResourceResolver(private val layer: DirectoryLayer, private val version: MinecraftVersion) {
 
-    private val profile = layer.version.profile
+//    private val profile: JsonProfile = layer.version.profile
     private val logger = globalLogger
 
-    open fun resolveAssetIndex(): String = layer.version.getAssetIndex()
+    open fun resolveAssetIndex(): String = version.getAssetIndex()
 
-    open fun resolveGameJar(): File = layer.version.getJarFile()
 
+    /**
+     * .minecraft/versions/version-name/version-name.jar
+     */
+    open fun resolveGameJar(): File = version.getJarFile()
+
+    /**
+     * .minecraft/assets/index/8.json
+     * File(resolveAssetRoot(), listOf("indexes", "${version.getAssetIndex()}.json").joinToString(File.separator))
+     */
     open fun resolveAssetIndexJsonFile(): File = File(resolveAssetRoot(), listOf("indexes", resolveAssetIndex() + ".json").joinToString(File.separator))
 
+    /**
+     * .minecraft/versions/version-name/version-name-natives
+     */
     open fun resolveNatives(isExtractSha1: Boolean = false): File {
-        val nr = layer.getNativeDirectory(true)
+        val nr = layer.getNativeDirectoryPosition(true)
         val lr = layer.getLibrariesRoot()
 
         fun doUnzip(path: String, excludes: List<String>?) {
@@ -38,7 +50,7 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
             }
         }
 
-        profile.libraries.forEachAvailable { library ->
+        version.profile.libraries.forEachAvailable { library ->
             library.downloads?.classifiers?.let { classifiers ->
 
                 classifiers.nativesWindows?.path?.let { path ->
@@ -66,7 +78,7 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
 
     open fun resolveClasspath(addingGameJar: Boolean = true, checkFileExists: Boolean = true): List<File> = buildList {
         val lr = resolveLibrariesRoot()
-        profile.libraries.forEachAvailable { library ->
+        version.profile.libraries.forEachAvailable { library ->
             library.downloads?.artifact?.let { artifact ->
                 val file = File(lr, artifact.path)
                 if (checkFileExists && !file.exists()) error("$file not exists!") // todo throw an exception
@@ -76,27 +88,42 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
         if (addingGameJar) add(resolveGameJar())
     }
 
+    /**
+     * .minecraft/assets/
+     */
     open fun resolveAssetRoot(autoCreate: Boolean = true): File = layer.getAssetRoot().apply {
         if (autoCreate && !exists()) mkdirs()
     }
 
+    /**
+     * .minecraft/assets/indexes/
+     */
     open fun resolveAssetIndexesDirectory(autoCreate: Boolean = true) = File(layer.getAssetRoot(), "indexes").apply {
         if (autoCreate && !exists()) mkdirs()
     }
 
+    /**
+     * .minecraft/assets/skins/
+     */
     open fun resolveAssetSkinDirectory(autoCreate: Boolean = true) = File(layer.getAssetRoot(), "skins").apply {
         if (autoCreate && !exists()) mkdirs()
     }
 
+    /**
+     * .minecraft or .minecraft/versions/version-name/
+     */
     open fun resolveGameDirectory(autoCreate: Boolean = true): File = layer.gameDirectory.apply { if (autoCreate && !exists()) mkdirs() }
 
+    /**
+     * .minecraft/libraries/
+     */
     open fun resolveLibrariesRoot(autoCreate: Boolean = true): File = layer.getLibrariesRoot().apply { if (autoCreate && !exists()) mkdirs() }
 
     open fun resolveComplexMinecraftArguments(gameConfig: Map<String, String>, ruleFeatures: Map<String, Boolean>): List<String> {
-        return profile.arguments?.game?.let { gameArguments ->
+        return version.profile.arguments?.game?.let { gameArguments ->
             mappingComplexMinecraftArguments(gameArguments, gameConfig, ruleFeatures)
-        } ?: profile.minecraftArguments?.let { ma ->
-            logger.debug("lower version: ${layer.version.versionId} detected, minecraftArguments is not null.")
+        } ?: version.profile.minecraftArguments?.let { ma ->
+            logger.debug("lower version: ${version.versionId} detected, minecraftArguments is not null.")
             resolveLowVersionMinecraftArguments(ma, gameConfig)
         } ?: run {
             // maybe low version
@@ -113,13 +140,13 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
     }
 
     open fun resolveComplexJvmArguments(jvmConfig: Map<String, String>): List<String> {
-        return profile.arguments?.jvm?.let { jvmArguments ->
+        return version.profile.arguments?.jvm?.let { jvmArguments ->
             mappingComplexMinecraftArguments(jvmArguments, jvmConfig, mapOf())
-        } ?: profile.minecraftArguments?.let { _ ->
+        } ?: version.profile.minecraftArguments?.let { _ ->
             resolveLowVersionJvmArguments(jvmConfig)
         } ?: run {
             // maybe low version
-            profile.minecraftArguments
+            version.profile.minecraftArguments
             TODO()
         }
     }
@@ -128,12 +155,12 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
         return listOf(
             "-cp",
             resolveClasspath(true).joinToString(File.pathSeparator) { it.absolutePath },
-            "-Djava.library.path=" + layer.getNativeDirectory(true)
+            "-Djava.library.path=" + resolveNatives() //layer.getNativeDirectoryPosition(true)
         )
     }
 
     open fun resolveLoggingArguments(loggingConfig: Map<String, String>): List<String> = buildList {
-        profile.logging?.client?.argument?.replaceDollarExpressions(loggingConfig)?.let { lc ->
+        version.profile.logging?.client?.argument?.replaceDollarExpressions(loggingConfig)?.let { lc ->
             add(lc)
         }
     }
@@ -150,13 +177,16 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
         config.stderrEncoding?.let { add("-Dsun.stderr.encoding=$it") }
     }
 
+    /**
+     * .minecraft/assets/objects
+     */
     open fun resolveAssetObjectsRoot(autoCreate: Boolean = true): File = File(resolveAssetRoot(), "objects")
         .apply { if (autoCreate && !exists()) mkdirs() }
 
     open fun resolveLoggingConfigurationFile(): File {
         return File(layer.workingDirectory, listOf(
             "versions",
-            layer.version.versionName,
+            version.versionName,
             "log4j2.xml"
         ).joinToString(File.separator))
     }

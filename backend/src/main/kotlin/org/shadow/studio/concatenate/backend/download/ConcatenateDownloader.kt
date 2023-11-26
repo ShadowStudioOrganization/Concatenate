@@ -20,20 +20,20 @@ const val DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE = 256 * 1024L
 open class ConcatenateDownloader(
     private val poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
     override val taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
-    private val ktorClient: HttpClient = globalClient,
-    private val ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
-) : Downloader {
+    protected val ktorClient: HttpClient = globalClient,
+    protected val ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
+) : MultiRoutineDownloader {
 
-    private var internalRemoteFiles: List<RemoteFile>? = null
-    private var internalBufferSizeAllocation: ((List<RemoteFile>) -> Long)? = null
-    private var internalDownloadCallback: ((ProgressInfo) -> Unit)? = null
-    private var internalLogger: Logger? = null
+    protected var internalRemoteFiles: List<RemoteFile>? = null
+    protected var internalBufferSizeAllocation: ((List<RemoteFile>) -> Long)? = null
+    protected var internalDownloadCallback: ((ProgressInfo) -> Unit)? = null
+    protected var internalLogger: Logger? = null
 
-    private val totalBytes: Long by lazy {
+    protected val totalBytes: Long by lazy {
         remoteFiles.sumOf { it.size }
     }
     private val processMutex = Mutex()
-    private var doneBytes = 0L
+    protected var doneBytes = 0L
 
     override val remoteFiles: List<RemoteFile>
         get() = internalRemoteFiles ?: error("remoteFiles has not been set, call setSource to set a source")

@@ -97,7 +97,7 @@ suspend fun ktorRangedDownloadAndTransferTo(
     callback: (suspend (Long, Long, Long) -> Unit)? = null,
 ) {
     client.prepareGet(url) {
-        if (range.last - range.first + 1 != originalFileSize) {
+        if (range.size() != originalFileSize) {
             // full content file task
             headers {
                 append("Range", "bytes=${range.first}-${range.last}")

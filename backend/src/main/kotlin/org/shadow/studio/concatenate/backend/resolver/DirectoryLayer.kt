@@ -3,21 +3,56 @@ package org.shadow.studio.concatenate.backend.resolver
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import java.io.File;
 
+
 interface DirectoryLayer {
 
-    val workingDirectory: File
-    val gameDirectory: File
-    val version: MinecraftVersion
+    val versionIsIsolated: Boolean
+    val versionName: String
 
+    /**
+     * .minecraft/
+     */
+    val workingDirectory: File
+
+    /**
+     * .minecraft/ or .minecraft/versions/version-name/
+     */
+    val gameDirectory: File
+
+    /**
+     * .minecraft/versions/
+     */
     fun getGameVersionDirectory(): File
 
-    fun getMinecraftJar(): File
+    /**
+     * .minecraft/versions/version-name/version-name.jar
+     */
+    fun getMinecraftJarPosition(): File
 
+    /**
+     * .minecraft/versions/version-name/version-name.json
+     */
+    fun getMinecraftJsonProfilePosition(): File
+
+    /**
+     * .minecraft/libraries
+     */
     fun getLibrariesRoot(): File
 
-    fun getNativeDirectory(isAutoCreate: Boolean = false): File
+    /**
+     * .minecraft/versions/version-name/version-name-natives
+     */
+    fun getNativeDirectoryPosition(isAutoCreate: Boolean = false): File
 
-    fun getAssetIndexFile(): File
-
+    /**
+     * .minecraft/assets
+     */
     fun getAssetRoot(): File
+
+    fun newMinecraftVersion(): MinecraftVersion {
+        val profile = getMinecraftJsonProfilePosition()
+        if (!profile.exists())
+            error("'$profile' which is minecraft json profile is not exist!")
+        return MinecraftVersion(versionName, profile, getMinecraftJarPosition(), versionIsIsolated)
+    }
 }

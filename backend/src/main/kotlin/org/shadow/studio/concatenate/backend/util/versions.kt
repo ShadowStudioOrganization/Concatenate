@@ -7,7 +7,7 @@ import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 internal val String.dateTimeInstance get() = parseOffsetIsoTime(this)
 
 internal fun String.asVersion() =
-    getInternalVersionManifest().versions.find {
+    getInternalLauncherMetaManifest().versions.find {
         it.id == this
     } ?: run {
         // maybe versionId is too new, or it just not exists, anyway throw an exception
@@ -22,7 +22,7 @@ operator fun String.rangeTo(versionId: String): List<Version> {
     val left = this.asVersion().releaseTime.dateTimeInstance
     val right = versionId.asVersion().releaseTime.dateTimeInstance
 
-    return getInternalVersionManifest().versions
+    return getInternalLauncherMetaManifest().versions
         .filter {
             val current = it.releaseTime.dateTimeInstance
             current in left..right
@@ -37,7 +37,7 @@ operator fun String.rangeUntil(versionId: String): List<Version> {
     val left = this.asVersion().releaseTime.dateTimeInstance
     val right = versionId.asVersion().releaseTime.dateTimeInstance
 
-    return getInternalVersionManifest().versions
+    return getInternalLauncherMetaManifest().versions
         .filter {
             val current = it.releaseTime.dateTimeInstance
             left <= current && current < right

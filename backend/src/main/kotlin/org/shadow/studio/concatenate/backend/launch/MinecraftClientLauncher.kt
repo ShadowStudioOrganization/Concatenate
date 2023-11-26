@@ -25,7 +25,7 @@ class MinecraftClientLauncher(
     override val environments: Map<String, String> = mapOf(),
     private val loginMethod: LoginMethod = OfflineMethod("Steve"),
     private val isCheckFileIntegrity: Boolean = true,
-    private val resolver: MinecraftResourceResolver = MinecraftResourceResolver(NormalDirectoryLayer(workingDirectory, version)),
+    private val resolver: MinecraftResourceResolver = MinecraftResourceResolver(NormalDirectoryLayer(workingDirectory, version.isolated, version.versionName), version),
     private val checker: MinecraftResourceChecker = MinecraftResourceChecker(),
     private val isConfiguratorMinecraftLogging: Boolean = false
 ) : MinecraftLauncher() {

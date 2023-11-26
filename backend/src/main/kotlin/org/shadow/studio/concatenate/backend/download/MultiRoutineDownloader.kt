@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 
-interface Downloader {
+interface MultiRoutineDownloader {
 
     val taskBufferSizeAllocation: (List<RemoteFile>) -> Long
         get() = ::defaultTaskBufferSizeAllocationMode
@@ -91,8 +91,6 @@ interface Downloader {
         else logger.debug("skipped local: {}", path)
         return null
     }
-
-
 
     fun defaultTaskBufferSizeAllocationMode(files: List<RemoteFile>): Long {
         val maxSize = files.maxOfOrNull { it.size } ?: 1024L

@@ -7,7 +7,7 @@ import org.shadow.studio.concatenate.backend.data.Version
 import org.shadow.studio.concatenate.backend.data.profile.Arguments
 import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.serializer.MinecraftArgumentsDeserializer
-import org.shadow.studio.concatenate.backend.util.getInternalVersionManifest
+import org.shadow.studio.concatenate.backend.util.getInternalLauncherMetaManifest
 import org.shadow.studio.concatenate.backend.util.*
 import java.io.File
 
@@ -58,7 +58,7 @@ class MinecraftVersion(
         val left = this.profile.releaseTime.dateTimeInstance
         val right = versionId.asVersion().releaseTime.dateTimeInstance
 
-        return getInternalVersionManifest().versions
+        return getInternalLauncherMetaManifest().versions
             .filter {
                 val current = it.releaseTime.dateTimeInstance
                 current in left..right
@@ -73,7 +73,7 @@ class MinecraftVersion(
         val left = this.profile.releaseTime.dateTimeInstance
         val right = versionId.asVersion().releaseTime.dateTimeInstance
 
-        return getInternalVersionManifest().versions
+        return getInternalLauncherMetaManifest().versions
             .filter {
                 val current = it.releaseTime.dateTimeInstance
                 left <= current && current < right

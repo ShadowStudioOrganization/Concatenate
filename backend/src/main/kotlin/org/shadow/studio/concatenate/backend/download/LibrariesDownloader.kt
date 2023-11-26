@@ -8,8 +8,6 @@ import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.forEachAvailable
 import org.shadow.studio.concatenate.backend.util.getSystemName
 import org.shadow.studio.concatenate.backend.util.globalClient
-import java.io.File
-import java.io.InputStream
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
@@ -49,7 +47,8 @@ class LibrariesDownloader(
     }
 
     init {
-        repositories.addRepository("bmclapi", Repository("https://bmclapi2.bangbang93.com/maven/"))
+        repositories.addRepository("bmclapi2", Repository("https://bmclapi2.bangbang93.com/maven/"))
+        repositories.addRepository("mcbbs", Repository("https://download.mcbbs.net/maven/"))
     }
 
     override fun getDownloadTarget(): List<RemoteFile> {

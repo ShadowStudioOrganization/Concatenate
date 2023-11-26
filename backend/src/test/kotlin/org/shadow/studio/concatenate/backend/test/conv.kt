@@ -1,102 +1,91 @@
 package org.shadow.studio.concatenate.backend.test
 
 import ch.qos.logback.classic.Level
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.utils.io.jvm.nio.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
-import org.shadow.studio.concatenate.backend.data.download.RemoteFile
 import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
-import org.shadow.studio.concatenate.backend.download.AssetDownloader
-import org.shadow.studio.concatenate.backend.download.ConcatQueue
-import org.shadow.studio.concatenate.backend.download.ConcatenateDownloader
-import org.shadow.studio.concatenate.backend.download.LibrariesDownloader
+import org.shadow.studio.concatenate.backend.download.*
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfiguration
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.login.OfflineMethod
-import org.shadow.studio.concatenate.backend.resolver.DirectoryLayer
+import org.shadow.studio.concatenate.backend.resolveBackendBuildPath
 import org.shadow.studio.concatenate.backend.resolver.MinecraftResourceResolver
 import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
-import org.shadow.studio.concatenate.backend.util.*
+import org.shadow.studio.concatenate.backend.util.getInternalLauncherMetaManifest
+import org.shadow.studio.concatenate.backend.util.globalLogger
+import org.shadow.studio.concatenate.backend.util.ktorRangedDownloadAndTransferTo
+import org.shadow.studio.concatenate.backend.util.urlRangedDownloadAndTransferTo
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import java.io.RandomAccessFile
-import java.net.URL
 import java.nio.file.Path
 import java.util.concurrent.Executors
-import kotlin.collections.buildList
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 @OptIn(ExperimentalTime::class)
 suspend fun main(): Unit = withContext(Dispatchers.IO) {
     val time = measureTime {
+//        launcherMetaDownload()
         mc()
-//        libDownload()
-//        assetDownload()
     }
 
     println("total spent: $time")
 }
 
+suspend fun launcherMetaDownload() {
+    val location = resolveBackendBuildPath("tmp/version_manifest.json")
+    val downloader = LauncherMetaManifestDownloader(location.toPath())
+    downloader.download()
+}
+
 suspend fun mc(): Unit = withContext(Dispatchers.IO) {
-    val wd = "D:/ProjectFiles/idea/Concatenate/backend/build/run"
 
-    val manifest = getInternalVersionManifest()
-    val versionManifest = manifest.versions.find { it.id == "1.20.2" } ?: error("????")
+    val versionName = "1.20.1"
+    val versionId = "1.20.1"
+    val workingDir = resolveBackendBuildPath("run2")
+    val launcherMeta = getInternalLauncherMetaManifest()
+    val versionManifest = launcherMeta.versions.find { it.id == versionId } ?: error("????")
+    val layer = NormalDirectoryLayer(workingDir, false, versionName)
 
-    val versionProfile = File(wd, "versions/${versionManifest.id}/${versionManifest.id}.json").apply {
-        if (!parentFile.exists()) parentFile.mkdirs()
-    }
+    val profileDownloader = GameProfileJsonDownloader(layer.getMinecraftJsonProfilePosition().toPath(), versionManifest)
+    profileDownloader.download()
 
-    if (!versionProfile.exists()) {
-        globalClient.get(versionManifest.url).bodyAsChannel().copyToFile(versionProfile.outputStream().channel)
-        globalLogger.info("fetched game profile")
-    }
+    val mcVersion = layer.newMinecraftVersion()
 
-    val version = MinecraftVersion("1.20.2", versionProfile)
-    val resolver = MinecraftResourceResolver(NormalDirectoryLayer(File(wd), version))
+    val resolver = MinecraftResourceResolver(layer, mcVersion)
 
-    val gameJar = resolver.resolveGameJar()
+    val assetIndexDownloader = AssetsIndexManifestDownloader(mcVersion.profile.assetIndex, resolver.resolveAssetIndexJsonFile().toPath())
+    assetIndexDownloader.download()
 
-    if (!gameJar.exists()) {
-        globalClient.get(version.profile.downloads.client.url).bodyAsChannel().copyToFile(gameJar.outputStream().channel)
-        globalLogger.info("fetched game jar")
-    }
+    val clientInfo = mcVersion.profile.downloads.client
+    val jarDownloader = GameClientJarDownloader(layer.getMinecraftJarPosition().toPath(), clientInfo)
 
-    resolver.resolveAssetRoot()
+    val assetDownloader = AssetDownloader(
+        assetManifestSource = resolver.resolveAssetIndexJsonFile(),
+        assetObjectsDirectory =  resolver.resolveAssetObjectsRoot().toPath()
+    )
 
-    val indexesDir = resolver.resolveAssetIndexesDirectory()
-    val assetIndexJson = File(indexesDir, version.profile.assetIndex.id + ".json")
-    globalClient.get(version.profile.assetIndex.url).bodyAsChannel().copyToFile(assetIndexJson.outputStream().channel)
+    val libDownloader = LibrariesDownloader(mcVersion, resolver.resolveLibrariesRoot().toPath())
 
-    globalLogger.info("fetched asset index")
 
-    val task1 = async {
-        AssetDownloader(
-            assetManifestSource = assetIndexJson,
-            assetDirectory = resolver.resolveAssetObjectsRoot().toPath()
-        ).download(3)
+    listOf(
+        jarDownloader,
+        assetDownloader,
+        libDownloader
+    ).map {
+        async {
+            it.useRepository("bmclapi2")
+            it.download()
+        }
+    }.awaitAll()
 
-        globalLogger.info("fetched assets")
-    }
-
-    val task2 = async {
-        val librariesRoot = resolver.resolveLibrariesRoot()
-        LibrariesDownloader(
-            version,
-            librariesRoot.toPath()
-        ).download(3)
-
-        globalLogger.info("fetched libs")
-    }
 
     val config = MinecraftClientConfiguration(
         minecraftExtraJvmArguments = MinecraftExtraJvmArguments(
@@ -104,13 +93,11 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
         )
     )
 
-    listOf(task1, task2).awaitAll()
-
     val launcher = MinecraftClientLauncher(
         adapter = JavaAdapter(),
         clientCfg = config,
-        workingDirectory = File(wd),
-        version = version,
+        workingDirectory = workingDir,
+        version = mcVersion,
         loginMethod = OfflineMethod("whiterasbk")
     )
 

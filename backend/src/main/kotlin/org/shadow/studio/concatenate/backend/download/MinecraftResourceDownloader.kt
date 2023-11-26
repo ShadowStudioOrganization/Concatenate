@@ -12,8 +12,8 @@ abstract class MinecraftResourceDownloader(
     ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
 ): ConcatenateDownloader(poolSize, taskTTL, ktorClient, ktorBuffetSize) {
 
-    val repositories: Repositories = Repositories(Repository(officialRepositoryUrl))
-    var currentRepository: Repository = repositories.official
+    protected val repositories: Repositories = Repositories(Repository(officialRepositoryUrl))
+    protected var currentRepository: Repository = repositories.official
 
     class Repositories(official: Repository): MutableMap<String, Repository> by LinkedHashMap() {
 
@@ -27,15 +27,15 @@ abstract class MinecraftResourceDownloader(
             return getOrElse(name) { error("$name repository is not defined") }
         }
 
-        fun addRepository(name: String, value: Repository): Boolean {
+        fun addRepository(name: String, repo: Repository): Boolean {
             return if (this[name] != null) false else {
-                this[name] = value
+                this[name] = repo
                 true
             }
         }
 
-        fun setRepository(name: String, value: Repository) {
-            this[name] = value
+        fun setRepository(name: String, repo: Repository) {
+            this[name] = repo
         }
     }
 
@@ -46,9 +46,11 @@ abstract class MinecraftResourceDownloader(
         }
     }
 
-    internal fun urlProcess(url: String): String {
-        return if (currentRepository != repositories.official) {
-            url.replaceFirst(currentRepository.baseUrl, "").let { currentRepository.wrap(it) }
+    protected open fun urlProcess(url: String): String {
+        return if (currentRepository != repositories.official && url.startsWith(repositories.official.baseUrl)) {
+            url.replaceFirst(repositories.official.baseUrl, "").let {
+                currentRepository.wrap(it)
+            }
         } else url
     }
 
