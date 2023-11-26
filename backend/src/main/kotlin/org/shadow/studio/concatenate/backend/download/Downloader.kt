@@ -2,9 +2,11 @@ package org.shadow.studio.concatenate.backend.download
 
 import org.shadow.studio.concatenate.backend.data.download.DownloadTask
 import org.shadow.studio.concatenate.backend.data.download.RemoteFile
+import org.shadow.studio.concatenate.backend.util.calculateSHA1
 import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.slf4j.Logger
 import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.exists
 
 interface Downloader {
@@ -76,11 +78,24 @@ interface Downloader {
                 }
             }
         }
-
     }
 
+    fun needReDownload(path: Path, size: Long, sha1: String): Boolean {
+        val file = path.toFile()
+        return !path.exists() || size != file.length() || calculateSHA1(file) != sha1
+    }
+
+    fun <R> ifNeedReDownloadThen(path: Path, size: Long, sha1: String, action: () -> R): R? {
+        if (needReDownload(path, size, sha1))
+            return action()
+        else logger.debug("skipped local: {}", path)
+        return null
+    }
+
+
+
     fun defaultTaskBufferSizeAllocationMode(files: List<RemoteFile>): Long {
-        val maxSize = files.maxOf { it.size }
+        val maxSize = files.maxOfOrNull { it.size } ?: 1024L
         val upto = 50 * 1024 * 1024L
         return if (maxSize <= upto) maxSize else upto
     }

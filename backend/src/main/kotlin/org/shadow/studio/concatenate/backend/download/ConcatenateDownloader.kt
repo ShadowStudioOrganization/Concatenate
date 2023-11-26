@@ -2,7 +2,7 @@ package org.shadow.studio.concatenate.backend.download
 
 import io.ktor.client.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.internal.synchronized
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -13,11 +13,15 @@ import org.shadow.studio.concatenate.backend.data.download.RemoteFile
 import org.shadow.studio.concatenate.backend.util.*
 import org.slf4j.Logger
 
+const val DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE = 64
+const val DEFAULT_CONCATE_DOWNLOADER_TASK_TTL = 7
+const val DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE = 256 * 1024L
+
 open class ConcatenateDownloader(
-    private val poolSize: Int = 64,
-    override val taskTTL: Int = 7,
+    private val poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
+    override val taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
     private val ktorClient: HttpClient = globalClient,
-    private val ktorBuffetSize: Long = 256 * 1024L
+    private val ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
 ) : Downloader {
 
     private var internalRemoteFiles: List<RemoteFile>? = null
@@ -28,7 +32,7 @@ open class ConcatenateDownloader(
     private val totalBytes: Long by lazy {
         remoteFiles.sumOf { it.size }
     }
-    private val progressMutex = Mutex()
+    private val processMutex = Mutex()
     private var doneBytes = 0L
 
     override val remoteFiles: List<RemoteFile>
@@ -69,7 +73,7 @@ open class ConcatenateDownloader(
         downloadTask.state = DownloadTaskState.Processing
 
         val callback: suspend (Long, Long, Long) -> Unit = { bytesWrittenThisLoop, bytesSoFar, _ ->
-            progressMutex.withLock { doneBytes += bytesWrittenThisLoop }
+            processMutex.withLock { doneBytes += bytesWrittenThisLoop }
 
             internalDownloadCallback?.invoke(ProgressInfo(
                 target = downloadTask.remoteFile,
@@ -101,6 +105,15 @@ open class ConcatenateDownloader(
         }
     }
 
+    suspend fun download(tryTimes: Int, restFor: Long = 1000L): ConcatQueue<DownloadTask> {
+        val failedTasks = download()
+        return if (failedTasks.isNotEmpty()) {
+            logger.debug("download failed, try to re-download $tryTimes times more")
+            if (restFor > 0) delay(restFor)
+            download(tryTimes - 1, restFor)
+        } else ConcatQueue()
+    }
+
     override suspend fun download(): ConcatQueue<DownloadTask> = withContext(Dispatchers.IO) {
 
         val taskBufferSize = taskBufferSizeAllocation(remoteFiles)
@@ -114,21 +127,27 @@ open class ConcatenateDownloader(
 
         tasks.forEachIndexed { index, downloadTask ->
             queue.enqueue(downloadTask)
-            logger.info("enqueued task with index: $index ==> $downloadTask")
+            logger.debug("enqueued task with index: {} ==> {}", index, downloadTask)
         }
 
         coroutineExecutorsAsync(poolSize) { id ->
             while (true) {
-                val task = progressMutex.withLock{ queue.dequeue() } ?: break
+                val task = processMutex.withLock{ queue.dequeue() } ?: break
                 try {
                     task.state = DownloadTaskState.Start
                     rangedDownload(task)
                     task.state = DownloadTaskState.Success
-                    logger.info("coroutine-$id downloaded range: ${task.range} sourceUrl: ${task.remoteFile.url} to local: ${task.remoteFile.localDestination}")
-                } catch (e: Throwable) {
-                    logger.error("task error occurred, reason: ${e.localizedMessage}, exception: ${e.javaClass.name}")
+                    logger.debug(
+                        "coroutine-{} downloaded range: {} sourceUrl: {} to local: {}",
+                        id + 1,
+                        task.range,
+                        task.remoteFile.url,
+                        task.remoteFile.localDestination
+                    )
+                } catch (e: Throwable) { // todo specific the exception type
+                    logger.error("task error occurred, reason: ${e.localizedMessage}, exception: ${e.javaClass.name}, task info: $task")
                     if (task.ttl > 0) {
-                        progressMutex.withLock {
+                        processMutex.withLock {
                             queue.enqueue(task.apply { ttl -- })
                             logger.error("task with ttl: ${task.ttl} re-enqueued, fully info: $task")
                             doneBytes -= task.range.size()

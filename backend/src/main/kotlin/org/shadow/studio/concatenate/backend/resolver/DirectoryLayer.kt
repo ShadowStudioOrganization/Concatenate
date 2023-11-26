@@ -17,7 +17,7 @@ interface DirectoryLayer {
 
     fun getNativeDirectory(isAutoCreate: Boolean = false): File
 
-    fun getAccessIndexFile(): File
+    fun getAssetIndexFile(): File
 
-    fun getAccessRoot(): File
+    fun getAssetRoot(): File
 }

@@ -5,6 +5,7 @@ import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 import org.shadow.studio.concatenate.backend.util.calculateSHA1
 import org.shadow.studio.concatenate.backend.util.eachAvailableLibrary
+import org.shadow.studio.concatenate.backend.util.getAssetObjectsFromFile
 import org.shadow.studio.concatenate.backend.util.globalLogger
 import java.io.File
 
@@ -24,10 +25,7 @@ open class MinecraftResourceChecker {
 
     open fun checkAssetsObjects(indexJsonFile: File, indexObjectRoot: File): Boolean {
 
-        val objects = jacksonObjectMapper().readTree(indexJsonFile).let { rootNode ->
-            if (!rootNode.isObject) error("not an object")
-            rootNode.get("objects")
-        }
+        val objects = getAssetObjectsFromFile(indexJsonFile)
 
         var isComplete = true
         for ((key, item) in objects.fields()) {

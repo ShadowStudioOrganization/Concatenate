@@ -6,7 +6,7 @@ data class JsonProfile(
     val arguments: Arguments?,
     val assetIndex: AssetIndex,
     val assets: String,
-    val clientVersion: String,
+    val clientVersion: String?,
     val complianceLevel: Int,
     val downloads: GameDownloads,
     val id: String,

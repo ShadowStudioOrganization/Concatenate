@@ -38,7 +38,7 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
             }
         }
 
-        eachAvailableLibrary(profile.libraries) { library ->
+        profile.libraries.forEachAvailable { library ->
             library.downloads?.classifiers?.let { classifiers ->
 
                 classifiers.nativesWindows?.path?.let { path ->
@@ -66,7 +66,7 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
 
     open fun resolveClasspath(addingGameJar: Boolean = true, checkFileExists: Boolean = true): List<File> = buildList {
         val lr = resolveLibrariesRoot()
-        eachAvailableLibrary(profile.libraries) { library ->
+        profile.libraries.forEachAvailable { library ->
             library.downloads?.artifact?.let { artifact ->
                 val file = File(lr, artifact.path)
                 if (checkFileExists && !file.exists()) error("$file not exists!") // todo throw an exception
@@ -76,11 +76,21 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
         if (addingGameJar) add(resolveGameJar())
     }
 
-    open fun resolveAssetRoot(): File = layer.getAccessRoot()
+    open fun resolveAssetRoot(autoCreate: Boolean = true): File = layer.getAssetRoot().apply {
+        if (autoCreate && !exists()) mkdirs()
+    }
 
-    open fun resolveGameDirectory(): File = layer.gameDirectory
+    open fun resolveAssetIndexesDirectory(autoCreate: Boolean = true) = File(layer.getAssetRoot(), "indexes").apply {
+        if (autoCreate && !exists()) mkdirs()
+    }
 
-    open fun resolveLibrariesRoot(): File = layer.getLibrariesRoot()
+    open fun resolveAssetSkinDirectory(autoCreate: Boolean = true) = File(layer.getAssetRoot(), "skins").apply {
+        if (autoCreate && !exists()) mkdirs()
+    }
+
+    open fun resolveGameDirectory(autoCreate: Boolean = true): File = layer.gameDirectory.apply { if (autoCreate && !exists()) mkdirs() }
+
+    open fun resolveLibrariesRoot(autoCreate: Boolean = true): File = layer.getLibrariesRoot().apply { if (autoCreate && !exists()) mkdirs() }
 
     open fun resolveComplexMinecraftArguments(gameConfig: Map<String, String>, ruleFeatures: Map<String, Boolean>): List<String> {
         return profile.arguments?.game?.let { gameArguments ->
@@ -140,7 +150,8 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer) {
         config.stderrEncoding?.let { add("-Dsun.stderr.encoding=$it") }
     }
 
-    open fun resolveAssetObjectsRoot(): File = File(resolveAssetRoot(), "objects")
+    open fun resolveAssetObjectsRoot(autoCreate: Boolean = true): File = File(resolveAssetRoot(), "objects")
+        .apply { if (autoCreate && !exists()) mkdirs() }
 
     open fun resolveLoggingConfigurationFile(): File {
         return File(layer.workingDirectory, listOf(

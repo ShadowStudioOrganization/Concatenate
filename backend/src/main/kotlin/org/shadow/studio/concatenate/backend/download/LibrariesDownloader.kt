@@ -6,64 +6,92 @@ import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.forEachAvailable
+import org.shadow.studio.concatenate.backend.util.getSystemName
 import org.shadow.studio.concatenate.backend.util.globalClient
+import java.io.File
+import java.io.InputStream
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
 
 class LibrariesDownloader(
     private val libraries: List<LibraryItem>,
     private val librariesRoot: Path,
-    poolSize: Int = 64,
-    taskTTL: Int = 7,
+    officialRepositoryUrl: String = OFFICIAL_LIBRARIES_REPO_HEAD,
+    poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
+    taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
     ktorClient: HttpClient = globalClient,
-    ktorBuffetSize: Long = 256 * 1024
-) : ConcatenateDownloader(poolSize, taskTTL, ktorClient, ktorBuffetSize) {
+    ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
+) : MinecraftResourceDownloader(officialRepositoryUrl, poolSize, taskTTL, ktorClient, ktorBuffetSize) {
 
-    constructor(jsonProfile: JsonProfile, librariesRoot: Path) : this(jsonProfile.libraries, librariesRoot)
-    constructor(version: MinecraftVersion, librariesRoot: Path) : this(version.profile, librariesRoot)
+    constructor(
+        jsonProfile: JsonProfile,
+        assetDirectory: Path,
+        officialRepositoryUrl: String = OFFICIAL_LIBRARIES_REPO_HEAD,
+        poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
+        taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
+        ktorClient: HttpClient = globalClient,
+        ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
+    ) : this(jsonProfile.libraries, assetDirectory, officialRepositoryUrl, poolSize, taskTTL, ktorClient, ktorBuffetSize)
 
-    private var currentRepository: String = repositories.getOrElse("official") { error("official repository is not find") }
+    constructor(
+        version: MinecraftVersion,
+        assetDirectory: Path,
+        officialRepositoryUrl: String = OFFICIAL_LIBRARIES_REPO_HEAD,
+        poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
+        taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
+        ktorClient: HttpClient = globalClient,
+        ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
+    ) : this(version.profile, assetDirectory, officialRepositoryUrl, poolSize, taskTTL, ktorClient, ktorBuffetSize)
+
 
     companion object {
-        private const val MINECRAFT_OFFICIAL_LIBRARY_REPOSITORY_HEAD = "https://libraries.minecraft.net/"
-
-        private val repositories: MutableMap<String, String> = mutableMapOf<String, String>().apply {
-            put("official", MINECRAFT_OFFICIAL_LIBRARY_REPOSITORY_HEAD)
-            put("bmclapi", "https://bmclapi2.bangbang93.com/maven/")
-        }
+        const val OFFICIAL_LIBRARIES_REPO_HEAD = "https://libraries.minecraft.net/"
     }
 
-    fun useRepository(key: String) {
-        currentRepository = repositories.getOrElse(key) { error("$key repository is not defined") }
+    init {
+        repositories.addRepository("bmclapi", Repository("https://bmclapi2.bangbang93.com/maven/"))
     }
 
-    fun addRepository(key: String, head: String) {
-        repositories[key] = head
-    }
+    override fun getDownloadTarget(): List<RemoteFile> {
+        return buildList {
+            libraries.forEachAvailable { lib ->
+                lib.downloads?.artifact?.let { artifact ->
+                    val local = getLocalDestination(artifact.path)
 
-    private fun urlProcess(url: String): String {
-        return if (currentRepository != MINECRAFT_OFFICIAL_LIBRARY_REPOSITORY_HEAD) {
-            url.replaceFirst(MINECRAFT_OFFICIAL_LIBRARY_REPOSITORY_HEAD, "")
-                .let { rawUrl ->
-                    currentRepository + rawUrl
-                }
-        } else url
-    }
-
-    override val remoteFiles: List<RemoteFile>
-        get() {
-            return buildList {
-                libraries.forEachAvailable {
-                    it.downloads?.artifact?.let { artifact ->
-                        this += RemoteFile(
+                    ifNeedReDownloadThen(local, artifact.size, artifact.sha1) {
+                        add(RemoteFile(
                             urlProcess(artifact.url),
                             artifact.size,
-                            Path.of(librariesRoot.absolutePathString(), artifact.path),
+                            local,
                             artifact.sha1
-                        )
+                        ))
+                    }
+                }
+
+                lib.downloads?.classifiers?.let { classifiers ->
+                    val artifact = when(getSystemName()) {
+                        "windows" -> classifiers.nativesWindows ?: classifiers.nativesWindows64 ?: classifiers.nativesWindows32
+                        "linux" -> classifiers.nativesLinux
+                        "osx" -> classifiers.nativesMacos ?: classifiers.nativesOSX
+                        else -> null
+                    }
+
+                    artifact?.let {
+                        val local = getLocalDestination(it.path)
+                        ifNeedReDownloadThen(local, it.size, it.sha1) {
+                            add(RemoteFile(urlProcess(it.url), it.size, local, it.sha1))
+                        }
                     }
                 }
             }
         }
+    }
+
+    private fun getLocalDestination(relativePath: Path): Path {
+        return Path.of(librariesRoot.absolutePathString(), relativePath.toString())
+    }
+
+    private fun getLocalDestination(relativePath: String): Path {
+        return getLocalDestination(Path.of(relativePath))
+    }
 }

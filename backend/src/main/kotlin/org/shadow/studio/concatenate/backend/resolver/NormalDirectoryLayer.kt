@@ -33,9 +33,9 @@ class NormalDirectoryLayer(
         return file
     }
 
-    override fun getAccessIndexFile(): File {
-        return File(getAccessRoot(), listOf("indexes", "${version.getAssetIndex()}.json").joinToString(File.separator))
+    override fun getAssetIndexFile(): File {
+        return File(getAssetRoot(), listOf("indexes", "${version.getAssetIndex()}.json").joinToString(File.separator))
     }
 
-    override fun getAccessRoot(): File = File(workingDirectory, "assets")
+    override fun getAssetRoot(): File = File(workingDirectory, "assets")
 }
