@@ -1,6 +1,6 @@
 package org.shadow.studio.concatenate.backend.util
 
-import org.shadow.studio.concatenate.backend.adapter.JavaRuntimeLocation
+import org.shadow.studio.concatenate.backend.data.jrelocalpath.JavaRuntimeLocation
 import org.shadow.studio.concatenate.backend.data.launchermeta.Version
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 

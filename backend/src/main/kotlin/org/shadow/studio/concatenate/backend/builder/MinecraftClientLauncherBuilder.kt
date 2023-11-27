@@ -3,7 +3,7 @@ package org.shadow.studio.concatenate.backend.builder
 import ch.qos.logback.classic.Level
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
 import org.shadow.studio.concatenate.backend.adapter.JavaFinder
-import org.shadow.studio.concatenate.backend.adapter.JavaRuntimeLocation
+import org.shadow.studio.concatenate.backend.data.jrelocalpath.JavaRuntimeLocation
 import org.shadow.studio.concatenate.backend.checksum.MinecraftResourceChecker
 import org.shadow.studio.concatenate.backend.util.LazyValueDelegate
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfiguration

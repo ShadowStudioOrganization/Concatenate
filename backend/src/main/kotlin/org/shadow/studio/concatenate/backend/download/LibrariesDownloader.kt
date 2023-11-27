@@ -5,11 +5,9 @@ import org.shadow.studio.concatenate.backend.data.download.RemoteFile
 import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
-import org.shadow.studio.concatenate.backend.util.forEachAvailable
-import org.shadow.studio.concatenate.backend.util.forEachAvailableArtifactAndClassifier
-import org.shadow.studio.concatenate.backend.util.getSystemName
-import org.shadow.studio.concatenate.backend.util.globalClient
+import org.shadow.studio.concatenate.backend.util.*
 import java.nio.file.Path
+import kotlin.collections.buildList
 import kotlin.io.path.absolutePathString
 
 class LibrariesDownloader(

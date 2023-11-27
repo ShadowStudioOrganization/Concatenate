@@ -44,10 +44,6 @@ suspend fun main(): Unit = withContext(Dispatchers.IO) {
             workingDirectory = resolveBackendBuildPath("run")
             loginMethod = OfflineMethod("whiterasbk")
             setLaunchLoggerLevel(Level.INFO)
-
-            login {
-
-            }
         }
 
         val instance = launcher.launch()

@@ -2,6 +2,9 @@ package org.shadow.studio.concatenate.backend.download
 
 import io.ktor.client.*
 import org.shadow.studio.concatenate.backend.data.download.RemoteFile
+import org.shadow.studio.concatenate.backend.util.DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
+import org.shadow.studio.concatenate.backend.util.DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE
+import org.shadow.studio.concatenate.backend.util.DEFAULT_CONCATE_DOWNLOADER_TASK_TTL
 import org.shadow.studio.concatenate.backend.util.globalClient
 
 abstract class MinecraftResourceDownloader(

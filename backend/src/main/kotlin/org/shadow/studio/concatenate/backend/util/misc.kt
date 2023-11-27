@@ -36,3 +36,15 @@ inline fun buildMinecraftClientLauncher(config: MinecraftClientLauncherBuilder.(
 inline fun buildMinecraftClientConfiguration(config: MinecraftClientConfigurationBuilder.() -> Unit): MinecraftClientConfiguration {
     return MinecraftClientConfigurationBuilder().apply(config).build()
 }
+
+inline fun <T> buildConcatQueue(block: ConcatQueue<T>.() -> Unit): ConcatQueue<T> {
+    return ConcatQueue<T>().apply(block)
+}
+
+inline fun <T> buildAsyncConcatQueue(block: AsyncConcatQueue<T>.() -> Unit): AsyncConcatQueue<T> {
+    return AsyncConcatQueue<T>().apply(block)
+}
+
+const val DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE = 64
+const val DEFAULT_CONCATE_DOWNLOADER_TASK_TTL = 7
+const val DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE = 256 * 1024L

@@ -7,6 +7,7 @@ import io.ktor.utils.io.core.*
 import io.ktor.utils.io.nio.*
 import org.shadow.studio.concatenate.backend.data.download.DownloadTask
 import org.shadow.studio.concatenate.backend.data.download.ProgressInfo
+import org.shadow.studio.concatenate.backend.util.DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
 import org.shadow.studio.concatenate.backend.util.globalClient
 
 abstract class UnknownLengthResourceDownloader(

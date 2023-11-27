@@ -1,6 +1,7 @@
 package org.shadow.studio.concatenate.backend.adapter
 
 
+import org.shadow.studio.concatenate.backend.data.jrelocalpath.JavaRuntimeLocation
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.contains
 import org.shadow.studio.concatenate.backend.util.rangeTo

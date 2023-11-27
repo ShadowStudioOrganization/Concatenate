@@ -2,12 +2,12 @@ package org.shadow.studio.concatenate.backend.download
 
 import io.ktor.client.*
 import org.shadow.studio.concatenate.backend.data.download.RemoteFile
-import org.shadow.studio.concatenate.backend.util.getAssetObjectsFromString
-import org.shadow.studio.concatenate.backend.util.globalClient
+import org.shadow.studio.concatenate.backend.util.*
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.collections.buildList
 import kotlin.io.path.absolutePathString
 
 class AssetDownloader(

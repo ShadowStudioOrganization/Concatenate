@@ -13,10 +13,6 @@ import org.shadow.studio.concatenate.backend.data.download.RemoteFile
 import org.shadow.studio.concatenate.backend.util.*
 import org.slf4j.Logger
 
-const val DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE = 64
-const val DEFAULT_CONCATE_DOWNLOADER_TASK_TTL = 7
-const val DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE = 256 * 1024L
-
 open class ConcatenateDownloader(
     private val poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
     override val taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,

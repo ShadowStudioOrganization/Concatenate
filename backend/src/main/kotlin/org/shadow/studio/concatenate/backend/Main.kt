@@ -22,7 +22,7 @@ fun main() = runBlocking {
         }
 
         preferJavaVersion = 8
-    }
+    }.build()
 
     val `1_12_2_forge` = "1.12.2-Forge_14.23.5.2859"
     val stoneblock3 = "FTB StoneBlock 3 1.6.1"

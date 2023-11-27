@@ -2,8 +2,8 @@ package org.shadow.studio.concatenate.backend.checksum
 
 import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
-import org.shadow.studio.concatenate.backend.download.AsyncConcatQueue
-import org.shadow.studio.concatenate.backend.download.buildAsyncConcatQueue
+import org.shadow.studio.concatenate.backend.util.AsyncConcatQueue
+import org.shadow.studio.concatenate.backend.util.buildAsyncConcatQueue
 import org.shadow.studio.concatenate.backend.util.*
 import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.slf4j.Logger

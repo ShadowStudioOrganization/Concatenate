@@ -2,6 +2,7 @@ package org.shadow.studio.concatenate.backend.download
 
 import org.shadow.studio.concatenate.backend.data.download.DownloadTask
 import org.shadow.studio.concatenate.backend.data.download.RemoteFile
+import org.shadow.studio.concatenate.backend.util.ConcatQueue
 import org.shadow.studio.concatenate.backend.util.calculateSHA1
 import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.slf4j.Logger
