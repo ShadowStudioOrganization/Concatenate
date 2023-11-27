@@ -126,6 +126,7 @@ class MinecraftClientDownloadGroup(
             workingDirectory = layer.workingDirectory
             versionName = layer.versionName
             versionIsolate = layer.versionIsIsolated
+            directoryLayer = layer
             block()
         }
     }
