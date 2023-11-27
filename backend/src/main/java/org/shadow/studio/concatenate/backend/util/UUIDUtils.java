@@ -29,7 +29,7 @@ public class UUIDUtils {
                 trimmedUUID.substring(16, 20) + "-" +
                 trimmedUUID.substring(20);
     }
-    public static Boolean getSkinByUUID(String Uuid) {
+   /* public static Boolean getSkinByUUID(String Uuid) {
         try {
             Map<String, List> json = getJsonFromUrl("https://sessionserver.mojang.com/session/minecraft/profile/", Uuid);
             Map<String, String> properties = (Map<String, String>) json.get("properties").get(0);
@@ -49,7 +49,7 @@ public class UUIDUtils {
             e.printStackTrace();
             return false;
         }
-    }
+    }*/
 
     private static String decodeFromBase64(String encodeString) {
         byte[] decodedBytes = Base64.getDecoder().decode(encodeString);

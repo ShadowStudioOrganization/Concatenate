@@ -67,11 +67,11 @@ data class GameDownloadItem(
 
 data class ClientLogging(
     val argument: String,
-    val `file`: File,
+    val file: LoggingFile,
     val type: String
 )
 
-data class File(
+data class LoggingFile(
     val id: String,
     val sha1: String,
     val size: Long,

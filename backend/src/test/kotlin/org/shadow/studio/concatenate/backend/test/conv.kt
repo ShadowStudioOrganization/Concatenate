@@ -36,35 +36,23 @@ import kotlin.time.measureTime
 @OptIn(ExperimentalTime::class)
 suspend fun main(): Unit = withContext(Dispatchers.IO) {
     val time = measureTime {
-//        launcherMetaDownload()
-//        mc()
-
-        val launcher = buildMinecraftClientLauncher {
-            versionName = "1.17.1"
-            workingDirectory = resolveBackendBuildPath("run")
-            loginMethod = OfflineMethod("whiterasbk")
-            setLaunchLoggerLevel(Level.INFO)
-        }
-
-        val instance = launcher.launch()
-
-        instance.process.waitFor()
-
+        dmc()
     }
 
     println("total spent: $time")
 }
 
-suspend fun launcherMetaDownload() {
-    val location = resolveBackendBuildPath("tmp/version_manifest.json")
-    val downloader = LauncherMetaManifestDownloader(location.toPath())
-    downloader.download()
-}
 
-@OptIn(ExperimentalTime::class)
-suspend fun mc(): Unit = withContext(Dispatchers.IO) {
 
-    val ktorClient = HttpClient(OkHttp) {
+
+suspend fun dmc() = withContext(Dispatchers.IO) {
+    val versionName = "1.17.1"
+    val versionId = "1.17.1"
+    val workingDir = resolveBackendBuildPath("run2")
+    val launcherMeta = getInternalLauncherMetaManifest()
+    val group = MinecraftClientDownloadGroup(versionId, versionName, workingDir, launcherMeta)
+
+    group.useNewOkHttpClient {
         engine {
             config {
                 followRedirects(true)
@@ -72,7 +60,7 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
         }
 
         install(HttpTimeout) {
-//            requestTimeoutMillis = 1000
+            // requestTimeoutMillis = 1000
             socketTimeoutMillis = 1000
             connectTimeoutMillis = 700
         }
@@ -80,74 +68,17 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
         BrowserUserAgent()
     }
 
+    group.downloadManifest()
+    group.initResourcesDownloader()
+    group.download()
 
-    val versionName = "1.7.10"
-    val versionId = "1.7.10"
-    val workingDir = resolveBackendBuildPath("run2")
-    val launcherMeta = getInternalLauncherMetaManifest()
-    val versionManifest = launcherMeta.versions.find { it.id == versionId } ?: error("????")
-    val layer = NormalDirectoryLayer(workingDir, false, versionName)
-
-    if (layer.getGameVersionDirectory().exists()) {
-        // skip download
-    }
-
-    val profileDownloader = GameProfileJsonDownloader(layer.getMinecraftJsonProfilePosition().toPath(), versionManifest)
-    profileDownloader.download()
-
-    val mcVersion = layer.newMinecraftVersion()
-
-    val resolver = MinecraftResourceResolver(layer, mcVersion)
-
-    val assetIndexDownloader =
-        AssetsIndexManifestDownloader(mcVersion.profile.assetIndex, resolver.resolveAssetIndexJsonFile().toPath())
-    assetIndexDownloader.download()
-
-    val clientInfo = mcVersion.profile.downloads.client
-    val jarDownloader = GameClientJarDownloader(layer.getMinecraftJarPosition().toPath(), clientInfo)
-
-    val assetDownloader = AssetDownloader(
-        assetManifestSource = resolver.resolveAssetIndexJsonFile(),
-        assetObjectsDirectory = resolver.resolveAssetObjectsRoot().toPath(),
-        poolSize = 128,
-        ktorClient = ktorClient
-    )
-
-    val libDownloader = LibrariesDownloader(mcVersion, resolver.resolveLibrariesRoot().toPath(), poolSize = 18, ktorClient = ktorClient)
-
-    val downloadUsingTime = measureTime {
-        listOf(
-            jarDownloader,
-            assetDownloader,
-            libDownloader
-        ).map {
-            async {
-                it.autoSwitchRepository = true
-                it.useRepository("mcbbs")
-                it.download(3)
-            }
-        }.awaitAll()
-    }
-
-
-    val config = MinecraftClientConfiguration(
-        minecraftExtraJvmArguments = MinecraftExtraJvmArguments(
-            fileEncoding = "GBK"
-        )
-    ).apply {
-        // preferJavaVersion = 8
-    }
-
-    val launcher = MinecraftClientLauncher(
-        adapter = JavaAdapter(),
-        clientCfg = config,
-        workingDirectory = workingDir,
-        version = mcVersion,
+    val launcher = group.buildLauncher {
         loginMethod = OfflineMethod("whiterasbk")
-    )
+        clientConfig {
+            fileEncoding = "GBK"
+        }
+    }
 
-    globalLogger.info("download using time: $downloadUsingTime")
-    globalLogger.info("Minecraft instance is starting")
     val instance = launcher.launch()
     val inputStream = instance.process.inputStream
 
@@ -168,6 +99,12 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
     val exitCode = instance.process.waitFor()
     globalLogger.info("Minecraft process exited with code: $exitCode")
 
+}
+
+suspend fun launcherMetaDownload() {
+    val location = resolveBackendBuildPath("tmp/version_manifest.json")
+    val downloader = LauncherMetaManifestDownloader(location.toPath())
+    downloader.download()
 }
 
 suspend fun libDownload() {
