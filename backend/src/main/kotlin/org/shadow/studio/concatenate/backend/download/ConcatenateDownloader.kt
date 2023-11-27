@@ -70,7 +70,7 @@ open class ConcatenateDownloader(
 
     override suspend fun rangedDownload(downloadTask: DownloadTask) {
 
-        downloadTask.state = DownloadTaskState.Processing
+        processMutex.withLock { downloadTask.state = DownloadTaskState.Processing }
 
         val callback: suspend (Long, Long, Long) -> Unit = { bytesWrittenThisLoop, bytesSoFar, _ ->
             processMutex.withLock { doneBytes += bytesWrittenThisLoop }
@@ -134,9 +134,9 @@ open class ConcatenateDownloader(
             while (true) {
                 val task = processMutex.withLock{ queue.dequeue() } ?: break
                 try {
-                    task.state = DownloadTaskState.Start
+                    processMutex.withLock { task.state = DownloadTaskState.Start }
                     rangedDownload(task)
-                    task.state = DownloadTaskState.Success
+                    processMutex.withLock { task.state = DownloadTaskState.Success }
                     logger.debug(
                         "coroutine-{} downloaded range: {} sourceUrl: {} to local: {}",
                         id + 1,
@@ -148,12 +148,17 @@ open class ConcatenateDownloader(
                     logger.error("task error occurred, reason: ${e.localizedMessage}, exception: ${e.javaClass.name}, task info: $task")
                     if (task.ttl > 0) {
                         processMutex.withLock {
-                            queue.enqueue(task.apply { ttl -- })
+                            task.state = DownloadTaskState.ReEnqueue
+                            queue.enqueue(task.apply {
+                                ttl --
+                                tweakDownloadIndex()
+                                isFailedOnFirstTime = true
+                            })
                             logger.error("task with ttl: ${task.ttl} re-enqueued, fully info: $task")
                             doneBytes -= task.range.size()
                         }
                     } else {
-                        failedTaskQueue.enqueue(task.apply { task.state = DownloadTaskState.Failed })
+                        processMutex.withLock { failedTaskQueue.enqueue(task.apply { task.state = DownloadTaskState.Failed }) }
                         logger.error("task is failed, loaded to failedTaskQueue, fully info: $task")
                     }
                 }

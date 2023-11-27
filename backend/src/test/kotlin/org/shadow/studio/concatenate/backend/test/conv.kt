@@ -1,6 +1,10 @@
 package org.shadow.studio.concatenate.backend.test
 
 import ch.qos.logback.classic.Level
+import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
@@ -15,10 +19,8 @@ import org.shadow.studio.concatenate.backend.login.OfflineMethod
 import org.shadow.studio.concatenate.backend.resolveBackendBuildPath
 import org.shadow.studio.concatenate.backend.resolver.MinecraftResourceResolver
 import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
-import org.shadow.studio.concatenate.backend.util.getInternalLauncherMetaManifest
+import org.shadow.studio.concatenate.backend.util.*
 import org.shadow.studio.concatenate.backend.util.globalLogger
-import org.shadow.studio.concatenate.backend.util.ktorRangedDownloadAndTransferTo
-import org.shadow.studio.concatenate.backend.util.urlRangedDownloadAndTransferTo
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.File
@@ -26,6 +28,7 @@ import java.io.InputStreamReader
 import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.util.concurrent.Executors
+import kotlin.collections.buildList
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -45,10 +48,28 @@ suspend fun launcherMetaDownload() {
     downloader.download()
 }
 
+@OptIn(ExperimentalTime::class)
 suspend fun mc(): Unit = withContext(Dispatchers.IO) {
 
-    val versionName = "1.20.1"
-    val versionId = "1.20.1"
+    val ktorClient = HttpClient(OkHttp) {
+        engine {
+            config {
+                followRedirects(true)
+            }
+        }
+
+        install(HttpTimeout) {
+//            requestTimeoutMillis = 1000
+            socketTimeoutMillis = 1000
+            connectTimeoutMillis = 700
+        }
+
+        BrowserUserAgent()
+    }
+
+
+    val versionName = "happy"
+    val versionId = "1.20.2"
     val workingDir = resolveBackendBuildPath("run2")
     val launcherMeta = getInternalLauncherMetaManifest()
     val versionManifest = launcherMeta.versions.find { it.id == versionId } ?: error("????")
@@ -61,7 +82,8 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
 
     val resolver = MinecraftResourceResolver(layer, mcVersion)
 
-    val assetIndexDownloader = AssetsIndexManifestDownloader(mcVersion.profile.assetIndex, resolver.resolveAssetIndexJsonFile().toPath())
+    val assetIndexDownloader =
+        AssetsIndexManifestDownloader(mcVersion.profile.assetIndex, resolver.resolveAssetIndexJsonFile().toPath())
     assetIndexDownloader.download()
 
     val clientInfo = mcVersion.profile.downloads.client
@@ -69,22 +91,26 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
 
     val assetDownloader = AssetDownloader(
         assetManifestSource = resolver.resolveAssetIndexJsonFile(),
-        assetObjectsDirectory =  resolver.resolveAssetObjectsRoot().toPath()
+        assetObjectsDirectory = resolver.resolveAssetObjectsRoot().toPath(),
+        poolSize = 128,
+        ktorClient = ktorClient
     )
 
-    val libDownloader = LibrariesDownloader(mcVersion, resolver.resolveLibrariesRoot().toPath())
+    val libDownloader = LibrariesDownloader(mcVersion, resolver.resolveLibrariesRoot().toPath(), poolSize = 18, ktorClient = ktorClient)
 
-
-    listOf(
-        jarDownloader,
-        assetDownloader,
-        libDownloader
-    ).map {
-        async {
-            it.useRepository("bmclapi2")
-            it.download()
-        }
-    }.awaitAll()
+    val downloadUsingTime = measureTime {
+        listOf(
+            jarDownloader,
+            assetDownloader,
+            libDownloader
+        ).map {
+            async {
+                it.autoSwitchRepository = true
+                it.useRepository("mcbbs")
+                it.download(3)
+            }
+        }.awaitAll()
+    }
 
 
     val config = MinecraftClientConfiguration(
@@ -101,6 +127,7 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
         loginMethod = OfflineMethod("whiterasbk")
     )
 
+    globalLogger.info("download using time: $downloadUsingTime")
     globalLogger.info("Minecraft instance is starting")
     val instance = launcher.launch()
     val inputStream = instance.process.inputStream
@@ -149,7 +176,7 @@ suspend fun libDownload() {
     downloader.download()
 }
 
-suspend fun assetDownload() = withContext(Dispatchers.IO){
+suspend fun assetDownload() = withContext(Dispatchers.IO) {
 //    val assetUrl = "https://piston-meta.mojang.com/v1/packages/edc6213221c780c6f44ec687084046200189c605/5.json"
 //    val input = URL(assetUrl).openConnection().getInputStream()
 

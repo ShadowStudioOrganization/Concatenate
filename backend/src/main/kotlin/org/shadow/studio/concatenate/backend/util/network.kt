@@ -11,7 +11,6 @@ import io.ktor.utils.io.nio.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.shadow.studio.concatenate.backend.data.download.DownloadTask
-import org.shadow.studio.concatenate.backend.data.download.DownloadTaskState
 import org.slf4j.Logger
 import java.io.RandomAccessFile
 import java.net.HttpURLConnection
@@ -62,7 +61,7 @@ suspend fun ktorRangedDownloadAndTransferTo(
     logger: Logger = globalLogger,
     callback: (suspend (Long, Long, Long) -> Unit)? = null
 ) = ktorRangedDownloadAndTransferTo(
-    task.remoteFile.url,
+    task.getDownloadUrl(),
     task.range,
     task.remoteFile.localDestination,
     task.remoteFile.size,

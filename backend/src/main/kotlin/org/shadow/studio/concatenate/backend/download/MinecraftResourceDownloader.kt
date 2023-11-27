@@ -14,6 +14,7 @@ abstract class MinecraftResourceDownloader(
 
     protected val repositories: Repositories = Repositories(Repository(officialRepositoryUrl))
     protected var currentRepository: Repository = repositories.official
+    var autoSwitchRepository: Boolean = false
 
     class Repositories(official: Repository): MutableMap<String, Repository> by LinkedHashMap() {
 
@@ -48,18 +49,35 @@ abstract class MinecraftResourceDownloader(
 
     protected open fun urlProcess(url: String): String {
         return if (currentRepository != repositories.official && url.startsWith(repositories.official.baseUrl)) {
-            url.replaceFirst(repositories.official.baseUrl, "").let {
-                currentRepository.wrap(it)
-            }
+            currentRepository.wrap(getSubUrl(url))
+//            url.replaceFirst(repositories.official.baseUrl, "").let {
+//                currentRepository.wrap(it)
+//            }
         } else url
+    }
+
+    private fun getSubUrl(fullUrl: String): String {
+        var now: String = fullUrl
+        repositories.forEach { (_, repo) ->
+            now = now.replaceFirst(repo.baseUrl, "")
+        }
+        return now
     }
 
     fun useRepository(name: String) {
         currentRepository = repositories.getRepository(name)
     }
 
+    private fun RemoteFile.addMultiDownloadRepositories() {
+        downloadSources = repositories.map { (_, repo) -> getSubUrl(repo.wrap(url)) }.filter { it != url }.reversed()
+    }
+
     override val remoteFiles: List<RemoteFile>
-        get() = getDownloadTarget()
+        get() = getDownloadTarget().apply {
+            if (autoSwitchRepository) {
+                forEach { it.addMultiDownloadRepositories() }
+            }
+        }
 
     abstract fun getDownloadTarget(): List<RemoteFile>
 }

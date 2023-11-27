@@ -14,8 +14,6 @@ abstract class UnknownLengthResourceDownloader(
     ktorClient :HttpClient = globalClient,
     ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
 ): MinecraftResourceDownloader(officialRepositoryUrl, 1, 3, ktorClient, ktorBuffetSize)  {
-
-
     override suspend fun rangedDownload(downloadTask: DownloadTask) {
         val channel = ktorClient.get(downloadTask.remoteFile.url).bodyAsChannel()
         val local = downloadTask.remoteFile.localDestination.toFile()
