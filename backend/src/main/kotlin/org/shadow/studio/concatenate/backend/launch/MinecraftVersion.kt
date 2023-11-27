@@ -3,7 +3,7 @@ package org.shadow.studio.concatenate.backend.launch
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.shadow.studio.concatenate.backend.data.Version
+import org.shadow.studio.concatenate.backend.data.launchermeta.Version
 import org.shadow.studio.concatenate.backend.data.profile.Arguments
 import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.serializer.MinecraftArgumentsDeserializer

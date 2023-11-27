@@ -61,6 +61,7 @@ class MinecraftClientLauncher(
             }
         }
 
+        adapter.findJava()
         val javaBinary = adapter.getJavaBinary(version, clientCfg.preferJavaVersion)?.path?.toFile() ?: error("no suitable java binary found.")
 
         val nativesDirectory = resolver.resolveNatives()
@@ -82,6 +83,8 @@ class MinecraftClientLauncher(
                 put("library_directory", resolver.resolveLibrariesRoot().absolutePath)
                 put("launcher_version", Concatenate.launcherVersion)
                 put("classpath_separator", File.pathSeparator)
+
+                clientCfg.modifyJvmArgumentsVariablePool(this)
             }))
             add(resolver.resolveExtraJvmArguments(clientCfg.minecraftExtraJvmArguments))
             if (isConfiguratorMinecraftLogging) {
@@ -116,6 +119,8 @@ class MinecraftClientLauncher(
                     put("game_directory", resolver.resolveGameDirectory().absolutePath.wrapDoubleQuote())
 
                     putAll(clientCfg.featureGameArguments)
+
+                    clientCfg.modifyUserArgumentsVariablePool(this)
                 },
                 clientCfg.clientRuleFeatures
             ))

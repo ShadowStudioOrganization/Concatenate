@@ -1,4 +1,4 @@
-package org.shadow.studio.concatenate.backend.data
+package org.shadow.studio.concatenate.backend.data.launchermeta
 
 data class LauncherMetaManifest(
     val latest: Latest,

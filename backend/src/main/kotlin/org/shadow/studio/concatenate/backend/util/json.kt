@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
-import org.shadow.studio.concatenate.backend.data.LauncherMetaManifest
+import org.shadow.studio.concatenate.backend.data.launchermeta.LauncherMetaManifest
 
 @get:JvmName("_internalVersionManifest")
 private val internalLauncherMetaManifest: LauncherMetaManifest by lazy {

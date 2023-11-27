@@ -1,63 +1,27 @@
 package org.shadow.studio.concatenate.backend.launch
 
 import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
-import org.shadow.studio.concatenate.backend.util.ListBuilder
 
 class MinecraftClientConfiguration(
-    val clientId: String = "\${clientid}",
-    val versionType: String = "Concatenate",
-    val userType: String = "msa",
-    val minecraftExtraJvmArguments: MinecraftExtraJvmArguments = MinecraftExtraJvmArguments()
+    internal val clientId: String = "\${clientid}",
+    internal val versionType: String = "Concatenate",
+    internal val userType: String = "msa",
+    internal val minecraftExtraJvmArguments: MinecraftExtraJvmArguments = MinecraftExtraJvmArguments()
 ) {
-    var preferJavaVersion: Int? = 8
+    internal var preferJavaVersion: Int? = null
     internal val clientRuleFeatures = mutableMapOf<String, Boolean>()
     internal val featureGameArguments = mutableMapOf<String, String>()
     internal val customJvmArguments = mutableListOf<String>()
     internal val customUserArguments = mutableListOf<String>()
+    internal var onJvmArgumentsVariablePool: (MutableMap<String, String>.() -> Unit)? = null
+    internal var onUserArgumentsVariablePool: (MutableMap<String, String>.() -> Unit)? = null
 
-    fun customJvmArguments(block: ListBuilder<String>.() -> Unit) {
-        block(ListBuilder(customJvmArguments))
+    fun modifyUserArgumentsVariablePool(pool: MutableMap<String, String>) {
+        onUserArgumentsVariablePool?.invoke(pool)
     }
 
-    fun customUserArguments(block: ListBuilder<String>.() -> Unit) {
-        block(ListBuilder(customUserArguments))
+    fun modifyJvmArgumentsVariablePool(pool: MutableMap<String, String>) {
+        onJvmArgumentsVariablePool?.invoke(pool)
     }
 
-    fun enableFeature(name: String) {
-        clientRuleFeatures[name] = true
-    }
-
-    fun demoUser() {
-        enableFeature("is_demo_user")
-    }
-
-    fun disableFeature(name: String) {
-        clientRuleFeatures[name] = false
-    }
-
-    fun quickPlayPath(path: String) {
-        enableFeature("has_quick_plays_support")
-        featureGameArguments["quickPlayPath"] = path
-    }
-
-    fun quickPlayMultiplayer(arg: String) {
-        enableFeature("is_quick_play_multiplayer")
-        featureGameArguments["quickPlayMultiplayer"] = arg
-    }
-
-    fun quickPlaySinglePlayer(arg: String) {
-        enableFeature("is_quick_play_singleplayer")
-        featureGameArguments["quickPlaySingleplayer"] = arg
-    }
-
-    fun quickPlayRealms(arg: String) {
-        enableFeature("is_quick_play_realms")
-        featureGameArguments["quickPlayRealms"] = arg
-    }
-
-    fun windowSize(width: Int, height: Int) {
-        enableFeature("has_custom_resolution")
-        featureGameArguments["resolution_width"] = width.toString()
-        featureGameArguments["resolution_height"] = height.toString()
-    }
 }

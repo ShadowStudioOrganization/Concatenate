@@ -1,7 +1,7 @@
 package org.shadow.studio.concatenate.backend.download
 
 import io.ktor.client.*
-import org.shadow.studio.concatenate.backend.data.Version
+import org.shadow.studio.concatenate.backend.data.launchermeta.Version
 import org.shadow.studio.concatenate.backend.data.download.RemoteFile
 import org.shadow.studio.concatenate.backend.util.globalClient
 import java.nio.file.Path

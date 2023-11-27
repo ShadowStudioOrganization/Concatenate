@@ -2,24 +2,20 @@ package org.shadow.studio.concatenate.backend
 
 import kotlinx.coroutines.runBlocking
 import org.shadow.studio.concatenate.backend.adapter.*
-import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
 import org.shadow.studio.concatenate.backend.util.globalLogger
-import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfiguration
+import org.shadow.studio.concatenate.backend.builder.MinecraftClientConfigurationBuilder
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
-import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.login.OfflineMethod
 import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
 import java.io.*
 
 fun main() = runBlocking {
 
-    val config = MinecraftClientConfiguration(
-        minecraftExtraJvmArguments = MinecraftExtraJvmArguments(
-            fileEncoding = "UTF-8",
-            initialJavaHeapSize = "1G",
-            maximumJavaHeapSize = "4G"
-        )
-    ).apply {
+    val config = MinecraftClientConfigurationBuilder().apply {
+        fileEncoding = "UTF-8"
+        initialJavaHeapSize = "1G"
+        maximumJavaHeapSize = "4G"
+
         customJvmArguments {
             add("-XX:+UseConcMarkSweepGC")
             add("-XX:+CMSIncrementalMode")

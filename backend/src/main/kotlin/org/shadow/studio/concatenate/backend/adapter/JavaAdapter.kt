@@ -11,10 +11,13 @@ import org.shadow.studio.concatenate.backend.util.rangeTo
  * */
 open class JavaAdapter(private val finder: JavaFinder = JavaFinder()) {
 
+    var candidate: List<JavaRuntimeLocation> = emptyList()
+
+    suspend fun findJava() {
+        candidate = finder.find()
+    }
+
     open suspend fun getJavaBinary(version: MinecraftVersion, preferVersion: Int? = null): JavaRuntimeLocation? {
-
-        val candidate: List<JavaRuntimeLocation> = finder.find()
-
         return version.profile.javaVersion?.let { java ->
 
             candidate.find { it.majorVersion == preferVersion && it.is64bit }
