@@ -8,81 +8,44 @@ import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfiguration
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.login.OfflineMethod
+import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
 import java.io.*
 
 fun main() = runBlocking {
 
     val config = MinecraftClientConfiguration(
         minecraftExtraJvmArguments = MinecraftExtraJvmArguments(
-            fileEncoding = "GBK"
+            fileEncoding = "UTF-8",
+            initialJavaHeapSize = "1G",
+            maximumJavaHeapSize = "4G"
         )
-    )
-    val `1_20` = MinecraftVersion(
-        versionName = "1.20",
-        gameJar = File("D:/Games/aloneg/versions/1.20/1.20.jar"),
-        jsonProfile = File("D:/ProjectFiles/idea/Concatenate/backend/src/test/resources/version-profile/1.20.json"),
-    )
+    ).apply {
+        customJvmArguments {
+            add("-XX:+UseConcMarkSweepGC")
+            add("-XX:+CMSIncrementalMode")
+        }
 
-    val `1_17_1` = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/1.17.1/1.17.1.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/1.17.1/1.17.1.json"),
-        versionName = "1.17.1"
-    )
+        preferJavaVersion = 8
+    }
 
-    val `1_7_10` = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/1.7.10/1.7.10.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/1.7.10/1.7.10.json"),
-        versionName = "1.7.10"
-    )
+    val `1_12_2_forge` = "1.12.2-Forge_14.23.5.2859"
+    val stoneblock3 = "FTB StoneBlock 3 1.6.1"
+    val rd132211 = "rd-132211"
+    val inf20100618 = "inf-20100618"
 
-    val `1_14_1` = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/1.14.1/1.14.1.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/1.14.1/1.14.1.json"),
-        versionName = "1.14.1"
-    )
+    val wd1 = File("D:/Games/aloneg")
+    val wd2 = File("D:/ProjectFiles/idea/Concatenate/backend/build/run")
 
-    val `1_12_2_forge` = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/1.12.2-Forge_14.23.5.2859/1.12.2-Forge_14.23.5.2859.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/1.12.2-Forge_14.23.5.2859/1.12.2-Forge_14.23.5.2859.json"),
-        versionName = "1.12.2-Forge_14.23.5.2859"
-    )
+    val layer = NormalDirectoryLayer(wd1, false, "1.0")
 
-    val `1_12_2` = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/1.12.2/1.12.2.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/1.12.2/1.12.2.json"),
-        versionName = "1.12.2"
-    )
-
-    val stoneblock3 = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/FTB StoneBlock 3 1.6.1/FTB StoneBlock 3 1.6.1.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/FTB StoneBlock 3 1.6.1/FTB StoneBlock 3 1.6.1.json"),
-        versionName = "FTB StoneBlock 3 1.6.1"
-    )
-
-    val `1_2_5` = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/1.2.5/1.2.5.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/1.2.5/1.2.5.json"),
-        versionName = "1.2.5"
-    )
-
-    val rd132211 = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/rd-132211/rd-132211.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/rd-132211/rd-132211.json"),
-        versionName = "rd-132211"
-    )
-
-    val inf20100618 = MinecraftVersion(
-        gameJar = File("D:/Games/aloneg/versions/inf-20100618/inf-20100618.jar"),
-        jsonProfile = File("D:/Games/aloneg/versions/inf-20100618/inf-20100618.json"),
-        versionName = "inf-20100618"
-    )
 
     val launcher = MinecraftClientLauncher(
         adapter = JavaAdapter(),
         clientCfg = config,
-        workingDirectory = File("D:/Games/aloneg"),
-        version = `1_20`,
-        loginMethod = OfflineMethod("whiterasbk")
+        workingDirectory = wd1,
+        version = layer.newMinecraftVersion(),
+        loginMethod = OfflineMethod("whiterasbk"),
+        isCheckFileIntegrity = true
     )
 
     val logger = globalLogger

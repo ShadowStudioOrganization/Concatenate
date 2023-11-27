@@ -11,6 +11,7 @@ import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
 import org.shadow.studio.concatenate.backend.login.LoginMethod
 import org.shadow.studio.concatenate.backend.login.OfflineMethod
 import org.shadow.studio.concatenate.backend.util.*
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -24,25 +25,43 @@ class MinecraftClientLauncher(
     override val version: MinecraftVersion,
     override val environments: Map<String, String> = mapOf(),
     private val loginMethod: LoginMethod = OfflineMethod("Steve"),
+    private val logger: Logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java),
     private val isCheckFileIntegrity: Boolean = true,
-    private val resolver: MinecraftResourceResolver = MinecraftResourceResolver(NormalDirectoryLayer(workingDirectory, version.isolated, version.versionName), version),
-    private val checker: MinecraftResourceChecker = MinecraftResourceChecker(),
+    private val resolver: MinecraftResourceResolver
+        = MinecraftResourceResolver(NormalDirectoryLayer(workingDirectory, version.isolated, version.versionName), version),
+    private val checker: MinecraftResourceChecker = MinecraftResourceChecker(logger),
     private val isConfiguratorMinecraftLogging: Boolean = false
 ) : MinecraftLauncher() {
-
-    private val logger = LoggerFactory.getLogger(MinecraftClientLauncher::class.java)
 
     override suspend fun launch(): MinecraftClientInstance = withContext(Dispatchers.IO) {
         val profile = version.profile
         val versionJar = resolver.resolveGameJar()
 
         if (isCheckFileIntegrity) {
-            checker.checkVersionJar(profile, versionJar)
-            checker.checkAssetsObjects(resolver.resolveAssetIndexJsonFile(), resolver.resolveAssetObjectsRoot())
-            checker.checkClasspath(profile.libraries, resolver.resolveLibrariesRoot())
+            val isJarDamaged = !checker.checkVersionJar(profile, versionJar)
+            val assetsDamagedFiles = checker.checkAssetsObjects(resolver.resolveAssetIndexJsonFile(), resolver.resolveAssetObjectsRoot())
+            val classpathDamagedFiles = checker.checkClasspath(profile.libraries, resolver.resolveLibrariesRoot())
+
+            if (isJarDamaged) {
+                error("could not launch minecraft, since $versionJar is damaged or missing.")
+            }
+
+            if (classpathDamagedFiles.isNotEmpty()) {
+                val list = classpathDamagedFiles.map {
+                    "\n        >>located at " + it.absolutePath + if (!it.exists()) " [missing]" else " [damaged]"
+                }
+                error("could not launch minecraft, since the following libraries are damaged or missing: ${list.joinToString("")}")
+            }
+
+            if (assetsDamagedFiles.isNotEmpty()) {
+                val list = assetsDamagedFiles.map {
+                    "\n        >>located at " + it.absolutePath + if (!it.exists()) " [missing]" else " [damaged]"
+                }
+                error("could not launch minecraft, since the following assets are damaged or missing: ${list.joinToString("")}")
+            }
         }
 
-        val javaBinary = adapter.getJavaBinary(version)?.path?.toFile() ?: error("no suitable java binary found.")
+        val javaBinary = adapter.getJavaBinary(version, clientCfg.preferJavaVersion)?.path?.toFile() ?: error("no suitable java binary found.")
 
         val nativesDirectory = resolver.resolveNatives()
 
@@ -117,7 +136,7 @@ class MinecraftClientLauncher(
         )
     }
 
-    private fun debugCommands(command: List<String>) {
+    protected fun debugCommands(command: List<String>) {
         logger.debug("final arguments")
         var isReachingAccessToken = false
         command.forEach {

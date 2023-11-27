@@ -6,7 +6,7 @@ import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-fun unzip(zipFile: File, outputDir: File, filter: ((ZipEntry) -> Boolean)? = null) {
+fun uncompressZipFile(zipFile: File, outputDir: File, cover: Boolean = false, filter: ((ZipEntry) -> Boolean)? = null) {
     val buffer = ByteArray(1024 * 50)
     ZipInputStream(FileInputStream(zipFile)).use { zis ->
         var entry: ZipEntry? = zis.nextEntry
@@ -18,10 +18,16 @@ fun unzip(zipFile: File, outputDir: File, filter: ((ZipEntry) -> Boolean)? = nul
             }
 
             val newFile = File(outputDir, entry.name)
+
+            if (newFile.exists() && !cover) {
+                entry = zis.nextEntry
+                continue
+            }
+
             if (entry.isDirectory) newFile.mkdirs() else {
                 val outputStream = FileOutputStream(newFile)
-                var len: Int
-                while (zis.read(buffer).also { len = it } > 0) outputStream.write(buffer, 0, len)
+                var length: Int
+                while (zis.read(buffer).also { length = it } > 0) outputStream.write(buffer, 0, length)
                 outputStream.close()
             }
 

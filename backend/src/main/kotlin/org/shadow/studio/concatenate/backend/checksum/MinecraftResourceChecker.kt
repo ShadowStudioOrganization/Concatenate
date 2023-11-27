@@ -1,64 +1,74 @@
 package org.shadow.studio.concatenate.backend.checksum
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
-import org.shadow.studio.concatenate.backend.util.calculateSHA1
-import org.shadow.studio.concatenate.backend.util.eachAvailableLibrary
-import org.shadow.studio.concatenate.backend.util.getAssetObjectsFromFile
+import org.shadow.studio.concatenate.backend.download.AsyncConcatQueue
+import org.shadow.studio.concatenate.backend.download.buildAsyncConcatQueue
+import org.shadow.studio.concatenate.backend.util.*
 import org.shadow.studio.concatenate.backend.util.globalLogger
+import org.slf4j.Logger
 import java.io.File
 
-open class MinecraftResourceChecker {
+open class MinecraftResourceChecker(private val logger: Logger = globalLogger) {
 
-    private val logger = globalLogger
-
-    open fun checkVersionJar(profile: JsonProfile, versionJar: File) {
+    open fun checkVersionJar(profile: JsonProfile, versionJar: File): Boolean {
         val versionJarSha1 = profile.downloads.client.sha1
         val versionJarSize = profile.downloads.client.size
 
-        versionJarSha1?.let { sha1 ->
-            if (!checkSum(versionJar, versionJarSize, sha1))
-                error("version.jar file is damaged")
-        } // if versionJarSha1 is null
+        return versionJarSha1?.let { sha1 ->
+            checkSum(versionJar, versionJarSize, sha1)
+        } ?: versionJar.exists() && versionJar.length() != 0L
     }
 
-    open fun checkAssetsObjects(indexJsonFile: File, indexObjectRoot: File): Boolean {
+    /**
+     * @return failed files
+     */
+    open suspend fun checkAssetsObjects(indexJsonFile: File, indexObjectRoot: File, poolSize: Int = 64): AsyncConcatQueue<File> {
 
         val objects = getAssetObjectsFromFile(indexJsonFile)
 
-        var isComplete = true
-        for ((key, item) in objects.fields()) {
-            val hash = item.get("hash").textValue()
-            val size = item.get("size").longValue()
+        val failedPaths = AsyncConcatQueue<File>()
 
-            val asset = File(indexObjectRoot, hash.substring(0..1) + File.separator + hash)
-            logger.debug("checking asset: {} at {}", key, asset.absolutePath)
-            if (size != asset.length() || calculateSHA1(asset) != hash) {
-                isComplete = false
-                break
+        val items = buildAsyncConcatQueue<Triple<File, Long, Pair<String, String>>> {
+            for ((key, item) in objects.fields()) {
+                val hash = item.get("hash").textValue()
+                val size = item.get("size").longValue()
+                val asset = File(indexObjectRoot, hash.substring(0..1) + File.separator + hash)
+                enqueueAsync(Triple(asset, size, hash to key))
             }
         }
 
-        return isComplete
+        coroutineExecutorsAsync(poolSize) {
+            while (true) {
+                val (asset, size, hashAndKey) = items.dequeueAsync() ?: break
+                val (hash, key) = hashAndKey
+                if (!asset.exists() || size != asset.length() || calculateSHA1(asset) != hash) {
+                    failedPaths.enqueueAsync(asset)
+                }
+                logger.debug("checked asset: {}, named: {} at {}", hash, key, asset.parent)
+            }
+        }
+
+        return failedPaths
     }
 
-    open fun checkClasspath(libraries: List<LibraryItem>, librariesRootFile: File) {
-        eachAvailableLibrary(libraries) { library ->
-            library.downloads?.artifact?.let { artifact ->
-                val jar = File(librariesRootFile, artifact.path) // todo fix here
-                if (!jar.exists()) error("$jar not exists!, required by $library") // todo throw an exception
-
-                logger.debug("checking sha1 of {}", jar)
-                val real = calculateSHA1(jar)
-                val expect = artifact.sha1
-                if (jar.length() != artifact.size || expect != real)
-                    error("check file failed with $jar, expect: $expect, but real: $real") // todo throw an exception
+    /**
+     * @return failed files
+     */
+    open fun checkClasspath(libraries: List<LibraryItem>, librariesRootFile: File): List<File> {
+        val failedPaths = mutableListOf<File>()
+        libraries.forEachAvailableArtifactAndClassifier { artifact ->
+            val jar = File(librariesRootFile, artifact.path) // todo fix here
+            if (!checkSum(jar, artifact.size, artifact.sha1)) {
+                failedPaths += jar
             }
+            logger.debug("checked library: {}", jar)
         }
+
+        return failedPaths
     }
 
     private fun checkSum(file: File, size: Long, sha1: String): Boolean {
-        return file.length() == size && sha1 == calculateSHA1(file)
+        return file.exists() && file.length() == size && sha1 == calculateSHA1(file)
     }
 }

@@ -3,7 +3,6 @@ package org.shadow.studio.concatenate.backend
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Paths
-import kotlin.io.path.Path
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -11,8 +10,12 @@ import kotlin.time.measureTime
 
 
 fun resolveBackendBuildPath(relative: String, isDirAndAutoCreate: Boolean = false): File {
-    return Paths.get(System.getProperty("user.dir"), "backend/build", relative)
-        .toFile().apply { if (isDirAndAutoCreate && !exists()) mkdirs() }
+    val userDir = System.getProperty("user.dir")
+    val target = if (userDir.endsWith("backend") || userDir.endsWith("backend/"))
+        Paths.get(userDir, "build", relative)
+    else
+        Paths.get(userDir, "backend/build", relative)
+    return target.toFile().apply { if (isDirAndAutoCreate && !exists()) mkdirs() }
 }
 
 @OptIn(ExperimentalTime::class)

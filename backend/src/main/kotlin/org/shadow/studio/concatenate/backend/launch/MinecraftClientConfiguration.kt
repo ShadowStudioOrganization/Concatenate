@@ -9,10 +9,11 @@ class MinecraftClientConfiguration(
     val userType: String = "msa",
     val minecraftExtraJvmArguments: MinecraftExtraJvmArguments = MinecraftExtraJvmArguments()
 ) {
-    val clientRuleFeatures = mutableMapOf<String, Boolean>()
-    val featureGameArguments = mutableMapOf<String, String>()
-    val customJvmArguments = mutableListOf<String>()
-    val customUserArguments = mutableListOf<String>()
+    var preferJavaVersion: Int? = 8
+    internal val clientRuleFeatures = mutableMapOf<String, Boolean>()
+    internal val featureGameArguments = mutableMapOf<String, String>()
+    internal val customJvmArguments = mutableListOf<String>()
+    internal val customUserArguments = mutableListOf<String>()
 
     fun customJvmArguments(block: ListBuilder<String>.() -> Unit) {
         block(ListBuilder(customJvmArguments))

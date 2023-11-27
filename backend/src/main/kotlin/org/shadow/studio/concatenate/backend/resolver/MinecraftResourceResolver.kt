@@ -1,6 +1,7 @@
 
 package org.shadow.studio.concatenate.backend.resolver
 
+import kotlinx.coroutines.runBlocking
 import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
 import org.shadow.studio.concatenate.backend.data.profile.ComplexMinecraftArgument
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
@@ -30,49 +31,10 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer, private 
     /**
      * .minecraft/versions/version-name/version-name-natives
      */
-    open fun resolveNatives(isExtractSha1: Boolean = false): File {
+    open suspend fun resolveNatives(isExtractSha1: Boolean = false): File {
         val nr = layer.getNativeDirectoryPosition(true)
         val lr = layer.getLibrariesRoot()
-
-        fun doUnzip(path: String, excludes: List<String>?) {
-            unzip(File(lr, path), nr) { entry ->
-                var flag = 0
-                excludes?.forEach { exclude ->
-                    if (entry.name.startsWith(exclude)) flag ++
-                }
-
-                if (entry.name.startsWith("META-INF/")) flag ++
-                if (entry.name.endsWith(".txt")) flag ++
-                if (entry.name.endsWith(".git")) flag ++
-                if (!isExtractSha1 && entry.name.endsWith(".sha1")) flag ++
-
-                flag == 0
-            }
-        }
-
-        version.profile.libraries.forEachAvailable { library ->
-            library.downloads?.classifiers?.let { classifiers ->
-
-                classifiers.nativesWindows?.path?.let { path ->
-                    if (getSystemName() == "windows") {
-                        doUnzip(path, library.extract?.exclude)
-                    }
-                }
-
-                classifiers.nativesLinux?.path?.let { path ->
-                    if (getSystemName() == "linux") {
-                        doUnzip(path, library.extract?.exclude)
-                    }
-                }
-
-                classifiers.nativesMacos?.path?.let { path ->
-                    if (getSystemName() == "osx") {
-                        doUnzip(path, library.extract?.exclude)
-                    }
-                }
-            }
-        }
-
+        releaseNativeLibraries(version.profile.libraries, lr, nr)
         return nr
     }
 
@@ -155,7 +117,7 @@ open class MinecraftResourceResolver(private val layer: DirectoryLayer, private 
         return listOf(
             "-cp",
             resolveClasspath(true).joinToString(File.pathSeparator) { it.absolutePath },
-            "-Djava.library.path=" + resolveNatives() //layer.getNativeDirectoryPosition(true)
+            "-Djava.library.path=" + runBlocking { resolveNatives() } //layer.getNativeDirectoryPosition(true)
         )
     }
 

@@ -68,12 +68,16 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
     }
 
 
-    val versionName = "happy"
-    val versionId = "1.20.2"
+    val versionName = "1.7.10"
+    val versionId = "1.7.10"
     val workingDir = resolveBackendBuildPath("run2")
     val launcherMeta = getInternalLauncherMetaManifest()
     val versionManifest = launcherMeta.versions.find { it.id == versionId } ?: error("????")
     val layer = NormalDirectoryLayer(workingDir, false, versionName)
+
+    if (layer.getGameVersionDirectory().exists()) {
+        // skip download
+    }
 
     val profileDownloader = GameProfileJsonDownloader(layer.getMinecraftJsonProfilePosition().toPath(), versionManifest)
     profileDownloader.download()
@@ -117,7 +121,9 @@ suspend fun mc(): Unit = withContext(Dispatchers.IO) {
         minecraftExtraJvmArguments = MinecraftExtraJvmArguments(
             fileEncoding = "GBK"
         )
-    )
+    ).apply {
+        // preferJavaVersion = 8
+    }
 
     val launcher = MinecraftClientLauncher(
         adapter = JavaAdapter(),

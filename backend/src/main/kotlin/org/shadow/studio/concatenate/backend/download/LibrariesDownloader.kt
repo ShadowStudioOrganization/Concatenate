@@ -6,6 +6,7 @@ import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.forEachAvailable
+import org.shadow.studio.concatenate.backend.util.forEachAvailableArtifactAndClassifier
 import org.shadow.studio.concatenate.backend.util.getSystemName
 import org.shadow.studio.concatenate.backend.util.globalClient
 import java.nio.file.Path
@@ -53,7 +54,20 @@ class LibrariesDownloader(
 
     override fun getDownloadTarget(): List<RemoteFile> {
         return buildList {
-            libraries.forEachAvailable { lib ->
+
+            libraries.forEachAvailableArtifactAndClassifier { artifact ->
+                val local = getLocalDestination(artifact.path)
+                ifNeedReDownloadThen(local, artifact.size, artifact.sha1) {
+                    add(RemoteFile(
+                        urlProcess(artifact.url),
+                        artifact.size,
+                        local,
+                        artifact.sha1
+                    ))
+                }
+            }
+
+            /*libraries.forEachAvailable { lib ->
                 lib.downloads?.artifact?.let { artifact ->
                     val local = getLocalDestination(artifact.path)
 
@@ -82,7 +96,7 @@ class LibrariesDownloader(
                         }
                     }
                 }
-            }
+            }*/
         }
     }
 
