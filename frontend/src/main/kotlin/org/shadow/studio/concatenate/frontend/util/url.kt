@@ -1,6 +1,5 @@
 package org.shadow.studio.concatenate.frontend.util
 
-import androidx.compose.runtime.Composable
 import java.awt.Desktop
 import java.io.IOException
 import java.net.URI
