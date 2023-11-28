@@ -21,7 +21,7 @@ import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.slf4j.Logger
 import java.io.File
 
-class MinecraftClientDownloadGroup(
+class MinecraftClientDownloadManager(
     private val versionId: String,
     versionName: String,
     workingDirectory: File,
@@ -100,7 +100,7 @@ class MinecraftClientDownloadGroup(
             }
 
         }.onEach {
-            it.setLogger(this@MinecraftClientDownloadGroup.logger)
+            it.setLogger(this@MinecraftClientDownloadManager.logger)
         }
     }
 

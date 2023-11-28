@@ -1,24 +1,15 @@
 package org.shadow.studio.concatenate.backend.test
 
 import ch.qos.logback.classic.Level
-import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
-import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
-import org.shadow.studio.concatenate.backend.data.launch.MinecraftExtraJvmArguments
 import org.shadow.studio.concatenate.backend.download.*
-import org.shadow.studio.concatenate.backend.launch.MinecraftClientConfiguration
-import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
-import org.shadow.studio.concatenate.backend.util.buildMinecraftClientLauncher
 import org.shadow.studio.concatenate.backend.login.OfflineMethod
 import org.shadow.studio.concatenate.backend.resolveBackendBuildPath
-import org.shadow.studio.concatenate.backend.resolver.MinecraftResourceResolver
-import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
 import org.shadow.studio.concatenate.backend.util.getInternalLauncherMetaManifest
 import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.shadow.studio.concatenate.backend.util.ktorRangedDownloadAndTransferTo
@@ -50,7 +41,7 @@ suspend fun dmc() = withContext(Dispatchers.IO) {
     val versionId = "1.17.1"
     val workingDir = resolveBackendBuildPath("run2")
     val launcherMeta = getInternalLauncherMetaManifest()
-    val group = MinecraftClientDownloadGroup(versionId, versionName, workingDir, launcherMeta)
+    val group = MinecraftClientDownloadManager(versionId, versionName, workingDir, launcherMeta)
 
     group.useNewOkHttpClient {
         engine {
