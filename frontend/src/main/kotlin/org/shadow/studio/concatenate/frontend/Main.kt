@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.zIndex
 import org.shadow.studio.concatenate.frontend.homepage.navigationHomepage
 import java.io.InputStream
 
@@ -159,10 +160,8 @@ fun main() = application {
                 .background(color = Color.White)
         ) {
             if (boxIndex == 0) {
-                Row {
-                    navigationHomepage()
                     startGame()
-                }
+                    navigationHomepage()
             } else if (boxIndex == 1) {
                 Button(onClick = {
                     text1 = "管理(todo)"
@@ -182,7 +181,7 @@ fun main() = application {
 
 @Composable
 fun startGame() {
-    Box(modifier = Modifier) {
+    Box {
 //        Image(
 //            painter = painterResource("background.jpg"),
 //            contentDescription = null,
@@ -191,7 +190,7 @@ fun startGame() {
 //                .blur(radius = 2.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
 //        )
         var text by remember { mutableStateOf("启动游戏") }
-        Button(modifier = Modifier.padding(start = 325.dp, top = 400.dp)
+        Button(modifier = Modifier.padding(start = 525.dp, top = 400.dp)
             .width(200.dp)
             .height(75.dp),
             colors = ButtonDefaults.buttonColors(
