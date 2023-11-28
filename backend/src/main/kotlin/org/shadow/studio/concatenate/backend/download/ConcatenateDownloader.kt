@@ -1,11 +1,9 @@
 package org.shadow.studio.concatenate.backend.download
 
 import io.ktor.client.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import org.shadow.studio.concatenate.backend.data.download.DownloadTask
 import org.shadow.studio.concatenate.backend.data.download.DownloadTaskState
 import org.shadow.studio.concatenate.backend.data.download.ProgressInfo
@@ -14,22 +12,22 @@ import org.shadow.studio.concatenate.backend.util.*
 import org.slf4j.Logger
 
 open class ConcatenateDownloader(
-    private val poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
+    internal var poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
     override val taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
     protected val ktorClient: HttpClient = globalClient,
-    protected val ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
+    internal var ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
 ) : MultiRoutineDownloader {
 
-    protected var internalRemoteFiles: List<RemoteFile>? = null
-    protected var internalBufferSizeAllocation: ((List<RemoteFile>) -> Long)? = null
-    protected var internalDownloadCallback: ((ProgressInfo) -> Unit)? = null
-    protected var internalLogger: Logger? = null
+    protected open var internalRemoteFiles: List<RemoteFile>? = null
+    protected open var internalBufferSizeAllocation: ((List<RemoteFile>) -> Long)? = null
+    protected open var internalDownloadCallback: ((ProgressInfo) -> Unit)? = null
+    protected open var internalLogger: Logger? = null
 
-    protected val totalBytes: Long by lazy {
+    protected open val totalBytes: Long by lazy {
         remoteFiles.sumOf { it.size }
     }
     private val processMutex = Mutex()
-    protected var doneBytes = 0L
+    protected open var doneBytes = 0L
 
     override val remoteFiles: List<RemoteFile>
         get() = internalRemoteFiles ?: error("remoteFiles has not been set, call setSource to set a source")

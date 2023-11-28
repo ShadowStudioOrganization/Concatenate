@@ -1,16 +1,16 @@
 package org.shadow.studio.concatenate.backend.download
 
 import io.ktor.client.*
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
 import org.shadow.studio.concatenate.backend.data.download.RemoteFile
 import org.shadow.studio.concatenate.backend.util.*
 import java.io.File
 import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.buildList
 import kotlin.io.path.absolutePathString
 
@@ -55,31 +55,53 @@ class AssetDownloader(
         repositories.addRepository("mcbbs", Repository("https://download.mcbbs.net/assets/"))
     }
 
+
+
     override fun getDownloadTarget(): List<RemoteFile> {
 
         val assetObjects = getAssetObjectsFromString(assetManifestSource)
+        val totalItem = assetObjects.size()
+        val index = AtomicInteger(-1)
 
-        return buildList {
-            runBlocking {
-                val items = buildAsyncConcatQueue<Triple<String, Long, String>> {
-                    for ((_, info) in assetObjects.fields()) {
-                        val hash = info.get("hash").textValue()
-                        val size = info.get("size").longValue()
-                        val subPath = hash.substring(0..1) + "/" + hash
-                        enqueueAsync(Triple(subPath, size, hash))
-                    }
-                }
+        return multiThreadGenerateTargets { initial: (() -> RemoteFile?) -> Unit ->
+            for ((_, info) in assetObjects.fields()) {
+                val hash = info.get("hash").textValue()
+                val size = info.get("size").longValue()
+                val subPath = hash.substring(0..1) + "/" + hash
+                val local = Paths.get(assetObjectsDirectory.absolutePathString(), subPath)
 
-                coroutineExecutorsAsync(checkerPoolSize) {
-                    while (true) {
-                        val (subPath, size, hash) = items.dequeueAsync() ?: break
-                        val local = Paths.get(assetObjectsDirectory.absolutePathString(), subPath)
-                        ifNeedReDownloadThen(local, size, hash) {
-                            add(RemoteFile(currentRepository.wrap(subPath), size, local, hash))
-                        }
+                initial {
+                    ifNeedReDownloadThen(local, size, hash, index.incrementAndGet(), totalItem) {
+                        RemoteFile(currentRepository.wrap(subPath), size, local, hash)
                     }
                 }
             }
         }
+
+
+    /*    val totalItem = assetObjects.size()
+        val index = AtomicInteger(-1)
+        val pool = Executors.newFixedThreadPool(24)
+
+        val futures = buildList<Future<RemoteFile?>> {
+            for ((_, info) in assetObjects.fields()) {
+                val hash = info.get("hash").textValue()
+                val size = info.get("size").longValue()
+                val subPath = hash.substring(0..1) + "/" + hash
+                val local = Paths.get(assetObjectsDirectory.absolutePathString(), subPath)
+
+                this += pool.submit<RemoteFile?> {
+                    ifNeedReDownloadThen(local, size, hash, index.incrementAndGet(), totalItem) {
+                        RemoteFile(currentRepository.wrap(subPath), size, local, hash)
+                    }
+                }
+            }
+        }
+
+        pool.shutdown()
+        pool.awaitTermination(10, TimeUnit.MINUTES)
+
+        return futures.mapNotNull { it.get() }*/
+
     }
 }

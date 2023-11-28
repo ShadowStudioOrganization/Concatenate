@@ -91,12 +91,12 @@ class MinecraftClientDownloadManager(
                         assetManifestSource = indexJson,
                         assetObjectsDirectory = resolver.resolveAssetObjectsRoot().toPath(),
                         poolSize = 128,
-                        // ktorClient = ktorClient
+                        ktorClient = ktorClient
                     )
                 }
 
             resolver.resolveLibrariesRoot().let { libraryRoot ->
-                this += LibrariesDownloader(version, libraryRoot.toPath(), poolSize = 18 /*ktorClient = ktorClient*/)
+                this += LibrariesDownloader(version, libraryRoot.toPath(), poolSize = 18, ktorClient = ktorClient)
             }
 
         }.onEach {
@@ -116,7 +116,9 @@ class MinecraftClientDownloadManager(
         downloaders.map {
             async {
                 config?.let { cfg -> it.cfg() }
-                it.download(tryTimes, restFor)
+                it.download(tryTimes, restFor).apply {
+                    if (isNotEmpty()) error("download minecraft with $it for $tryTimes times, but all failed.")
+                }
             }
         }.awaitAll()
     }

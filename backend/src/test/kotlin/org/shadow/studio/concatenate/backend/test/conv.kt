@@ -37,8 +37,8 @@ suspend fun main(): Unit = withContext(Dispatchers.IO) {
 
 
 suspend fun dmc() = withContext(Dispatchers.IO) {
-    val versionName = "1.17.1"
-    val versionId = "1.17.1"
+    val versionName = "1.18.1"
+    val versionId = "1.18.1"
     val workingDir = resolveBackendBuildPath("run2")
     val launcherMeta = getInternalLauncherMetaManifest()
     val group = MinecraftClientDownloadManager(versionId, versionName, workingDir, launcherMeta)

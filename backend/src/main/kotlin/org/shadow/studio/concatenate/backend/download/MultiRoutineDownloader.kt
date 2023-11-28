@@ -86,10 +86,15 @@ interface MultiRoutineDownloader {
         return !path.exists() || size != file.length() || calculateSHA1(file) != sha1
     }
 
-    fun <R> ifNeedReDownloadThen(path: Path, size: Long, sha1: String, action: () -> R): R? {
+    fun <R> ifNeedReDownloadThen(path: Path, size: Long, sha1: String, curCount: Int? = null, totalItem: Int? = null, action: () -> R): R? {
         if (needReDownload(path, size, sha1))
             return action()
-        else logger.debug("skipped local: {}", path)
+        else {
+            if (curCount != null && totalItem != null)
+                logger.debug("skipped local: {} [{}/{}]", path, curCount, totalItem)
+            else
+                logger.debug("skipped local: {}", path)
+        }
         return null
     }
 

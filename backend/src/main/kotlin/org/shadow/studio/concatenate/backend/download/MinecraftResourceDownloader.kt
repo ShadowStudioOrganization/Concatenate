@@ -75,12 +75,16 @@ abstract class MinecraftResourceDownloader(
         downloadSources = repositories.map { (_, repo) -> getSubUrl(repo.wrap(url)) }.filter { it != url }.reversed()
     }
 
-    override val remoteFiles: List<RemoteFile>
-        get() = getDownloadTarget().apply {
+    override val remoteFiles: List<RemoteFile> by lazy {
+        getDownloadTarget().apply {
             if (autoSwitchRepository) {
                 forEach { it.addMultiDownloadRepositories() }
             }
+            internalRemoteFiles = this
         }
+    }
+
+
 
     abstract fun getDownloadTarget(): List<RemoteFile>
 }

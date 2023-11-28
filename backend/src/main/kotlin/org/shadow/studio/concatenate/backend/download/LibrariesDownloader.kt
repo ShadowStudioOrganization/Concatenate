@@ -7,6 +7,7 @@ import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.*
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.buildList
 import kotlin.io.path.absolutePathString
 
@@ -51,7 +52,23 @@ class LibrariesDownloader(
     }
 
     override fun getDownloadTarget(): List<RemoteFile> {
-        return buildList {
+
+        val totalItem = libraries.availableArtifactAndClassifier().size
+        val index = AtomicInteger(-1)
+
+        return multiThreadGenerateTargets<RemoteFile> { initial: (() -> RemoteFile?) -> Unit ->
+            libraries.forEachAvailableArtifactAndClassifier { artifact ->
+                val local = getLocalDestination(artifact.path)
+                initial {
+                    ifNeedReDownloadThen(local, artifact.size, artifact.sha1, index.incrementAndGet(), totalItem) {
+                        RemoteFile(urlProcess(artifact.url), artifact.size, local, artifact.sha1)
+                    }
+                }
+
+            }
+        }
+
+/*        return buildList {
 
             libraries.forEachAvailableArtifactAndClassifier { artifact ->
                 val local = getLocalDestination(artifact.path)
@@ -65,37 +82,7 @@ class LibrariesDownloader(
                 }
             }
 
-            /*libraries.forEachAvailable { lib ->
-                lib.downloads?.artifact?.let { artifact ->
-                    val local = getLocalDestination(artifact.path)
-
-                    ifNeedReDownloadThen(local, artifact.size, artifact.sha1) {
-                        add(RemoteFile(
-                            urlProcess(artifact.url),
-                            artifact.size,
-                            local,
-                            artifact.sha1
-                        ))
-                    }
-                }
-
-                lib.downloads?.classifiers?.let { classifiers ->
-                    val artifact = when(getSystemName()) {
-                        "windows" -> classifiers.nativesWindows ?: classifiers.nativesWindows64 ?: classifiers.nativesWindows32
-                        "linux" -> classifiers.nativesLinux
-                        "osx" -> classifiers.nativesMacos ?: classifiers.nativesOSX
-                        else -> null
-                    }
-
-                    artifact?.let {
-                        val local = getLocalDestination(it.path)
-                        ifNeedReDownloadThen(local, it.size, it.sha1) {
-                            add(RemoteFile(urlProcess(it.url), it.size, local, it.sha1))
-                        }
-                    }
-                }
-            }*/
-        }
+        }*/
     }
 
     private fun getLocalDestination(relativePath: Path): Path {

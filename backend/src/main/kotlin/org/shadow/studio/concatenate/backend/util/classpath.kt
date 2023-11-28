@@ -77,6 +77,46 @@ inline fun List<LibraryItem>.forEachAvailable(action: (LibraryItem) -> Unit) {
     }
 }
 
+fun List<LibraryItem>.availableItems(): List<LibraryItem> {
+    return buildList {
+        for (library in this@availableItems) {
+            var isForbidden = false
+
+            library.rules?.let { rules ->
+                isForbidden = !resolveLibraryRules(rules)
+            }
+
+            if (isForbidden) continue
+
+            add(library)
+        }
+    }
+}
+
+fun List<LibraryItem>.availableArtifacts(): List<Artifact> {
+    return buildList<Artifact> {
+        this@availableArtifacts.availableItems().forEach {
+            it.pickArtifact { artifact -> add(artifact) }
+        }
+    }
+}
+
+fun List<LibraryItem>.availableClassifierArtifacts(): List<Artifact> {
+    return buildList<Artifact> {
+        this@availableClassifierArtifacts.availableItems().forEach {
+            it.pickClassifierArtifact { artifact -> add(artifact) }
+        }
+    }
+}
+
+fun List<LibraryItem>.availableArtifactAndClassifier(): List<Artifact> {
+    return buildList<Artifact> {
+        this@availableArtifactAndClassifier.availableItems().forEach {
+            it.pickArtifact { artifact -> add(artifact) }
+            it.pickClassifierArtifact { artifact -> add(artifact) }
+        }
+    }
+}
 
 @Deprecated("use List<LibraryItem>.forEachAvailable instead")
 inline fun eachAvailableLibrary(libraries: List<LibraryItem>, action: (LibraryItem) -> Unit) {

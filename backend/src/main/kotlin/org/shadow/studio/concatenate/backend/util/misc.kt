@@ -8,6 +8,8 @@ import org.shadow.studio.concatenate.backend.builder.MinecraftClientConfiguratio
 import org.shadow.studio.concatenate.backend.launch.MinecraftClientLauncher
 import org.shadow.studio.concatenate.backend.builder.MinecraftClientLauncherBuilder
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 fun IntRange.toLongRange(): LongRange = LongRange(first.toLong(), last.toLong())
 fun LongRange.size(): Long = last - first + 1
@@ -43,6 +45,25 @@ inline fun <T> buildConcatQueue(block: ConcatQueue<T>.() -> Unit): ConcatQueue<T
 
 inline fun <T> buildAsyncConcatQueue(block: AsyncConcatQueue<T>.() -> Unit): AsyncConcatQueue<T> {
     return AsyncConcatQueue<T>().apply(block)
+}
+
+inline fun <T> multiThreadGenerateTargets(
+    poolSize: Int = 24,
+    timeoutSecond: Long = 15,
+    looper: ((() -> T?) -> Unit) -> Unit
+): List<T> {
+
+    val pool = Executors.newFixedThreadPool(poolSize)
+    val futures = kotlin.collections.buildList<Future<T?>> {
+        looper { initializer: () -> T? ->
+            this += pool.submit<T?> { initializer() }
+        }
+    }
+
+    pool.shutdown()
+    pool.awaitTermination(timeoutSecond, TimeUnit.MINUTES)
+
+    return futures.mapNotNull { it.get() }
 }
 
 const val DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE = 64
