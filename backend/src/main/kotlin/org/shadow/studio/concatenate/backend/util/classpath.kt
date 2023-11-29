@@ -23,7 +23,7 @@ inline fun LibraryItem.pickClassifierArtifact(action: LibraryItem.(Artifact) -> 
 
 suspend fun releaseNativeLibraries(libraries: List<LibraryItem>, librariesRootFile: File, into: File, isExtractSha1: Boolean = false) {
     libraries.forEachAvailableClassifier { artifact ->
-        coroutineExecutorsAsync(9) {
+        coroutineExecutorsAsync(9, poolName = "ReleaseNatives") {
             uncompressZipFile(File(librariesRootFile, artifact.path), into) { entry ->
                 var flag = 0
                 this@forEachAvailableClassifier.extract?.let { extract ->

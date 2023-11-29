@@ -38,7 +38,7 @@ open class MinecraftResourceChecker(private val logger: Logger = globalLogger) {
             }
         }
 
-        coroutineExecutorsAsync(poolSize) {
+        coroutineExecutorsAsync(poolSize, poolName = "MinecraftResourceCheck") {
             while (true) {
                 val (asset, size, hashAndKey) = items.dequeueAsync() ?: break
                 val (hash, key) = hashAndKey

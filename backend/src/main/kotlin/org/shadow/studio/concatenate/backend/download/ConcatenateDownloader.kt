@@ -124,7 +124,7 @@ open class ConcatenateDownloader(
             logger.debug("enqueued task with index: {} ==> {}", index, downloadTask)
         }
 
-        coroutineExecutorsAsync(poolSize) { id ->
+        coroutineExecutorsAsync(poolSize, poolName = this::class.simpleName ?: "MultiRoutineDownload") { id ->
             while (true) {
                 val task = processMutex.withLock{ queue.dequeue() } ?: break
                 try {

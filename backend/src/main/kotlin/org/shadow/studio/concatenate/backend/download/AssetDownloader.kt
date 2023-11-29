@@ -63,7 +63,7 @@ class AssetDownloader(
         val totalItem = assetObjects.size()
         val index = AtomicInteger(-1)
 
-        return multiThreadGenerateTargets { initial: (() -> RemoteFile?) -> Unit ->
+        return multiThreadGenerateTargets(poolName = "GetAssetTargets") { initial: (() -> RemoteFile?) -> Unit ->
             for ((_, info) in assetObjects.fields()) {
                 val hash = info.get("hash").textValue()
                 val size = info.get("size").longValue()

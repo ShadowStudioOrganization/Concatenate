@@ -56,7 +56,7 @@ class LibrariesDownloader(
         val totalItem = libraries.availableArtifactAndClassifier().size
         val index = AtomicInteger(-1)
 
-        return multiThreadGenerateTargets<RemoteFile> { initial: (() -> RemoteFile?) -> Unit ->
+        return multiThreadGenerateTargets(poolName = "GetLibraryTargets") { initial: (() -> RemoteFile?) -> Unit ->
             libraries.forEachAvailableArtifactAndClassifier { artifact ->
                 val local = getLocalDestination(artifact.path)
                 initial {
