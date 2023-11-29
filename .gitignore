@@ -46,3 +46,9 @@ bin/
 
 local.properties
 /frontend/src/main/resources/
+
+*.log
+*.log.gz
+*.log.zip
+
+logs/

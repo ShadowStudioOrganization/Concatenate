@@ -10,10 +10,8 @@ import org.shadow.studio.concatenate.backend.download.*
 import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.login.OfflineMethod
 import org.shadow.studio.concatenate.backend.resolveBackendBuildPath
-import org.shadow.studio.concatenate.backend.util.getInternalLauncherMetaManifest
+import org.shadow.studio.concatenate.backend.util.*
 import org.shadow.studio.concatenate.backend.util.globalLogger
-import org.shadow.studio.concatenate.backend.util.ktorRangedDownloadAndTransferTo
-import org.shadow.studio.concatenate.backend.util.urlRangedDownloadAndTransferTo
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.File
@@ -21,6 +19,7 @@ import java.io.InputStreamReader
 import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.util.concurrent.Executors
+import kotlin.collections.buildList
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -37,8 +36,8 @@ suspend fun main(): Unit = withContext(Dispatchers.IO) {
 
 
 suspend fun dmc() = withContext(Dispatchers.IO) {
-    val versionName = "1.18.1"
-    val versionId = "1.18.1"
+    val versionName = "1.16.3"
+    val versionId = "1.16.3"
     val workingDir = resolveBackendBuildPath("run2")
     val launcherMeta = getInternalLauncherMetaManifest()
     val group = MinecraftClientDownloadManager(versionId, versionName, workingDir, launcherMeta)
@@ -71,21 +70,8 @@ suspend fun dmc() = withContext(Dispatchers.IO) {
     }
 
     val instance = launcher.launch()
-    val inputStream = instance.process.inputStream
 
-    val reader = BufferedReader(InputStreamReader(inputStream))
-    var line: String?
-    while (reader.readLine().also { line = it } != null) {
-        println(line)
-    }
-
-    val errorStream = instance.process.errorStream
-
-    val errReader = BufferedReader(InputStreamReader(errorStream))
-    var errLine: String?
-    while (errReader.readLine().also { errLine = it } != null) {
-        println(errLine)
-    }
+    instance.handleProcessOutput()
 
     val exitCode = instance.process.waitFor()
     globalLogger.info("Minecraft process exited with code: $exitCode")
