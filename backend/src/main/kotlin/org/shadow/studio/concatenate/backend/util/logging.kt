@@ -4,11 +4,18 @@ import org.shadow.studio.concatenate.backend.data.launch.ProgramInstance
 import org.slf4j.LoggerFactory
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.util.Scanner
 import kotlin.concurrent.thread
 
 internal val globalLogger = LoggerFactory.getLogger("Global")
 
-fun ProgramInstance.handleProcessOutput() {
+fun ProgramInstance.handleProcessIO() {
+
+    thread(isDaemon = true, name = "MinecraftInput") {
+        val scanner = Scanner(System.`in`)
+        val line = scanner.nextLine()
+        process.outputStream.writer().write(line)
+    }
 
     thread(isDaemon = true, name = "MinecraftOutput") {
         val reader = BufferedReader(InputStreamReader(process.inputStream))

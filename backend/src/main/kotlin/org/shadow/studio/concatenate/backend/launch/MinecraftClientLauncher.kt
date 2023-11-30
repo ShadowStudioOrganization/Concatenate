@@ -2,6 +2,10 @@ package org.shadow.studio.concatenate.backend.launch
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.commons.cli.CommandLineParser
+import org.apache.commons.cli.DefaultParser
+import org.apache.commons.cli.Option
+import org.apache.commons.cli.Options
 import org.shadow.studio.concatenate.backend.Concatenate
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
 import org.shadow.studio.concatenate.backend.checksum.MinecraftResourceChecker
@@ -34,6 +38,25 @@ class MinecraftClientLauncher(
 ) : MinecraftLauncher() {
 
     override suspend fun launch(): MinecraftClientInstance = withContext(Dispatchers.IO) {
+
+        val command = buildLaunchCommand()
+
+        debugCommands(command)
+
+        val processBuilder = ProcessBuilder().apply {
+            command(command)
+            environment().putAll(environments)
+            directory(workingDirectory)
+        }
+
+        MinecraftClientInstance(
+            process = processBuilder.start(),
+            processBuilder = processBuilder
+        )
+    }
+
+    private suspend fun buildLaunchCommand(): List<String> {
+
         val profile = version.profile
         val versionJar = resolver.resolveGameJar()
 
@@ -68,18 +91,17 @@ class MinecraftClientLauncher(
 
         val loginInfo = loginMethod.login()
 
-        val command = buildList<String> {
-            add(javaBinary.absolutePath.wrapDoubleQuote())
+        return buildList<String> {
+            add(javaBinary.absolutePath)
 
             add(resolver.resolveComplexJvmArguments(buildMap {
-                put("version_name", version.versionName.wrapDoubleQuote())
+                put("version_name", version.versionName)
                 put("classpath", resolver
                     .resolveClasspath(true)
                     .joinToString(File.pathSeparator) { it.absolutePath }
-                    .wrapDoubleQuote()
                 )
                 put("launcher_name", Concatenate.launcherName)
-                put("natives_directory", nativesDirectory.absolutePath.wrapDoubleQuote())
+                put("natives_directory", nativesDirectory.absolutePath)
                 put("library_directory", resolver.resolveLibrariesRoot().absolutePath)
                 put("launcher_version", Concatenate.launcherVersion)
                 put("classpath_separator", File.pathSeparator)
@@ -89,10 +111,10 @@ class MinecraftClientLauncher(
             add(resolver.resolveExtraJvmArguments(clientCfg.minecraftExtraJvmArguments))
             if (isConfiguratorMinecraftLogging) {
                 add(resolver.resolveLoggingArguments(mapOf(
-                    "path" to resolver.resolveLoggingConfigurationFile().absolutePath.wrapDoubleQuote()
+                    "path" to resolver.resolveLoggingConfigurationFile().absolutePath
                 )))
             }
-            add("-Dminecraft.client.jar=" + versionJar.absolutePath.wrapDoubleQuote())
+            add("-Dminecraft.client.jar=" + versionJar.absolutePath)
             add(clientCfg.customJvmArguments)
             add(loginMethod.insertJvmArguments())
 
@@ -108,15 +130,15 @@ class MinecraftClientLauncher(
                     // low version
                     put("user_properties", loginInfo.userProperties)
                     put("auth_session", loginInfo.authSession)
-                    put("game_assets", resolver.resolveAssetRoot().absolutePath.wrapDoubleQuote())
+                    put("game_assets", resolver.resolveAssetRoot().absolutePath)
 
                     put("version_name", versionJar.nameWithoutExtension)
-                    put("assets_root", resolver.resolveAssetRoot().absolutePath.wrapDoubleQuote())
+                    put("assets_root", resolver.resolveAssetRoot().absolutePath)
                     put("assets_index_name", profile.assetIndex.id)
                     put("clientid", clientCfg.clientId)
                     put("user_type", clientCfg.userType)
                     put("version_type", clientCfg.versionType)
-                    put("game_directory", resolver.resolveGameDirectory().absolutePath.wrapDoubleQuote())
+                    put("game_directory", resolver.resolveGameDirectory().absolutePath)
 
                     putAll(clientCfg.featureGameArguments)
 
@@ -125,20 +147,23 @@ class MinecraftClientLauncher(
                 clientCfg.clientRuleFeatures
             ))
             add(clientCfg.customUserArguments)
+        }.map {
+            it.trim()
+        }.filter {
+            it.isNotBlank()
         }
+    }
 
-        debugCommands(command)
+    suspend fun buildLaunchScript(): String {
+        val command = buildLaunchCommand()
+        val before = """
+            cd ${workingDirectory.absolutePath.wrapDoubleQuote()}
+        """.trimIndent()
 
-        val processBuilder = ProcessBuilder().apply {
-            command(command)
-            environment().putAll(environments)
-            directory(workingDirectory)
-        }
-
-        MinecraftClientInstance(
-            process = processBuilder.start(),
-            processBuilder = processBuilder
-        )
+        val after = ""
+        return before + "\n" + command.joinToString(" ") {
+            if (" " in it) it.wrapDoubleQuote() else it
+        } + "\n" + after
     }
 
     protected fun debugCommands(command: List<String>) {

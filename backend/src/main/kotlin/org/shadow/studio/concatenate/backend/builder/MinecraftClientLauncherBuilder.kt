@@ -20,6 +20,7 @@ import java.io.File
 import java.nio.file.Path
 
 class MinecraftClientLauncherBuilder {
+    private var isConfigFlag: Boolean = false
     private var _workingDirectory: File? = null
     private var _versionName: String? = null
 
@@ -52,9 +53,12 @@ class MinecraftClientLauncherBuilder {
     fun login(block: () -> Unit): Unit = TODO("login impl")
 
     fun clientConfig(block: MinecraftClientConfigurationBuilder.() -> Unit) {
-        val builder = MinecraftClientConfigurationBuilder()
-        builder.block()
-        clientConfiguration = builder.build()
+        if (!this.isConfigFlag) {
+            val builder = MinecraftClientConfigurationBuilder()
+            builder.block()
+            clientConfiguration = builder.build()
+            this.isConfigFlag = true
+        } else error("client configuration can only call once.")
     }
 
     fun adapterMinecraftWithJava(selector: List<JavaRuntimeLocation>.(MinecraftVersion) -> JavaRuntimeLocation) {

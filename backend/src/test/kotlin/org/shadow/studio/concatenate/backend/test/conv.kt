@@ -13,9 +13,7 @@ import org.shadow.studio.concatenate.backend.resolveBackendBuildPath
 import org.shadow.studio.concatenate.backend.util.*
 import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.slf4j.LoggerFactory
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
 import java.io.RandomAccessFile
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -36,11 +34,11 @@ suspend fun main(): Unit = withContext(Dispatchers.IO) {
 
 
 suspend fun dmc() = withContext(Dispatchers.IO) {
-    val versionName = "1.16.3"
-    val versionId = "1.16.3"
-    val workingDir = resolveBackendBuildPath("run2")
+    val versionName = "FTB StoneBlock 3 1.6.1"
+    val versionId = "1.18.2"
+    val workingDir = File("D:\\Games\\aloneg") // resolveBackendBuildPath("run2")
     val launcherMeta = getInternalLauncherMetaManifest()
-    val group = MinecraftClientDownloadManager(versionId, versionName, workingDir, launcherMeta)
+    val group = MinecraftClientDownloadManager(versionId, versionName, workingDir, launcherMeta, true)
 
     group.useNewOkHttpClient {
         engine {
@@ -65,13 +63,22 @@ suspend fun dmc() = withContext(Dispatchers.IO) {
     val launcher = group.buildLauncher {
         loginMethod = OfflineMethod("whiterasbk")
         clientConfig {
-            fileEncoding = "GBK"
+            fileEncoding = "GB13080"
+            stderrEncoding = "GB13080"
+            stdoutEncoding = "GB13080"
+            initialJavaHeapSize = "1G"
+            maximumJavaHeapSize = "6G"
+//            customJvmArguments {
+//                this += "--add-exports"
+//                this += "cpw.mods.bootstraplauncher/cpw.mods.bootstraplauncher=ALL-UNNAMED"
+//            }
         }
     }
 
     val instance = launcher.launch()
+    resolveBackendBuildPath("tmp/launch.bat").writeText(launcher.buildLaunchScript())
 
-    instance.handleProcessOutput()
+    instance.handleProcessIO()
 
     val exitCode = instance.process.waitFor()
     globalLogger.info("Minecraft process exited with code: $exitCode")

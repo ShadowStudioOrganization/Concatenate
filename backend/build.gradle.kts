@@ -21,6 +21,9 @@ dependencies {
     implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.16")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    // https://mvnrepository.com/artifact/commons-cli/commons-cli
+//    implementation("commons-cli:commons-cli:1.6.0")
+
 //    implementation("org.apache.tika:tika:2.9.1")
 //    implementation("jmimemagic:jmimemagic:0.1.2")
 
