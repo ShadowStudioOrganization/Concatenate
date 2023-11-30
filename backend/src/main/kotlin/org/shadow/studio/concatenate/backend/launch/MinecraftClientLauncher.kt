@@ -2,19 +2,16 @@ package org.shadow.studio.concatenate.backend.launch
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.apache.commons.cli.CommandLineParser
-import org.apache.commons.cli.DefaultParser
-import org.apache.commons.cli.Option
-import org.apache.commons.cli.Options
 import org.shadow.studio.concatenate.backend.Concatenate
 import org.shadow.studio.concatenate.backend.adapter.JavaAdapter
 import org.shadow.studio.concatenate.backend.checksum.MinecraftResourceChecker
 import org.shadow.studio.concatenate.backend.data.launch.MinecraftClientInstance
-import org.shadow.studio.concatenate.backend.resolver.MinecraftResourceResolver
-import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
 import org.shadow.studio.concatenate.backend.login.LoginMethod
 import org.shadow.studio.concatenate.backend.login.OfflineMethod
-import org.shadow.studio.concatenate.backend.util.*
+import org.shadow.studio.concatenate.backend.resolver.MinecraftResourceResolver
+import org.shadow.studio.concatenate.backend.resolver.NormalDirectoryLayer
+import org.shadow.studio.concatenate.backend.util.buildList
+import org.shadow.studio.concatenate.backend.util.wrapDoubleQuote
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
