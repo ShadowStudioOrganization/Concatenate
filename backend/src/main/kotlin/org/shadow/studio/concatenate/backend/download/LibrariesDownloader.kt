@@ -8,12 +8,11 @@ import org.shadow.studio.concatenate.backend.launch.MinecraftVersion
 import org.shadow.studio.concatenate.backend.util.*
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.collections.buildList
 import kotlin.io.path.absolutePathString
 
-class LibrariesDownloader(
-    private val libraries: List<LibraryItem>,
-    private val librariesRoot: Path,
+open class LibrariesDownloader(
+    internal val libraries: List<LibraryItem>,
+    internal val librariesRoot: Path,
     officialRepositoryUrl: String = OFFICIAL_LIBRARIES_REPO_HEAD,
     poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
     taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
@@ -59,37 +58,41 @@ class LibrariesDownloader(
         return multiThreadGenerateTargets(poolName = "GetLibraryTargets") { initial: (() -> RemoteFile?) -> Unit ->
             libraries.forEachAvailableArtifactAndClassifier { artifact ->
                 val local = getLocalDestination(artifact.path)
-                initial {
-                    ifNeedReDownloadThen(local, artifact.size, artifact.sha1, index.incrementAndGet(), totalItem) {
-                        RemoteFile(urlProcess(artifact.url), artifact.size, local, artifact.sha1)
+                if (!artifact.isUnknownSH1orSize) {
+                    initial {
+                        ifNeedReDownloadThen(local, artifact.size, artifact.sha1, index.incrementAndGet(), totalItem) {
+                            RemoteFile(urlProcess(artifact.url), artifact.size, local, artifact.sha1)
+                        }
                     }
                 }
-
             }
         }
-
-/*        return buildList {
-
-            libraries.forEachAvailableArtifactAndClassifier { artifact ->
-                val local = getLocalDestination(artifact.path)
-                ifNeedReDownloadThen(local, artifact.size, artifact.sha1) {
-                    add(RemoteFile(
-                        urlProcess(artifact.url),
-                        artifact.size,
-                        local,
-                        artifact.sha1
-                    ))
-                }
-            }
-
-        }*/
     }
 
-    private fun getLocalDestination(relativePath: Path): Path {
+    fun containsFabricLibraries(): Boolean {
+        return libraries.any {
+            it.url?.contains("maven.fabricmc.net") ?: false
+        }
+    }
+
+    fun createFabricLibraryDownloader(
+        ktorClient: HttpClient = this.ktorClient,
+        poolSize: Int = this.poolSize,
+        taskTTL: Int = this.taskTTL,
+        ktorBuffetSize: Long = this.ktorBuffetSize): FabricLibrariesDownloader
+    = FabricLibrariesDownloader(
+        downloader = this,
+        ktorClient = ktorClient,
+        poolSize = poolSize,
+        taskTTL = taskTTL,
+        ktorBuffetSize = ktorBuffetSize
+    )
+
+    internal open fun getLocalDestination(relativePath: Path): Path {
         return Path.of(librariesRoot.absolutePathString(), relativePath.toString())
     }
 
-    private fun getLocalDestination(relativePath: String): Path {
+    internal open fun getLocalDestination(relativePath: String): Path {
         return getLocalDestination(Path.of(relativePath))
     }
 }

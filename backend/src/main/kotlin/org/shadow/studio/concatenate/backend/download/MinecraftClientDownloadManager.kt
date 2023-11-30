@@ -25,12 +25,10 @@ class MinecraftClientDownloadManager(
     private val versionId: String,
     versionName: String,
     workingDirectory: File,
-    meta: LauncherMetaManifest,
+    private val meta: LauncherMetaManifest,
     versionIsolated: Boolean = false
 ) {
 
-    private val versionManifest: Version = meta.versions.find { it.id == versionId }
-        ?: error("can't find the given minecraft version: $versionId in launcher mata manifest.")
 
     private val layer: DirectoryLayer
     private lateinit var resolver: MinecraftResourceResolver
@@ -51,6 +49,9 @@ class MinecraftClientDownloadManager(
     suspend fun downloadManifest(tryTimes: Int = 3, restFor: Long = 1000) {
         layer.getMinecraftJsonProfilePosition().let { jsonProfileLocal ->
             if (!jsonProfileLocal.exists()) {
+                val versionManifest: Version = meta.versions.find { it.id == versionId }
+                    ?: error("can't find the given minecraft version: $versionId in launcher mata manifest.")
+
                 GameProfileJsonDownloader(
                     jsonProfileLocal.toPath(),
                     versionManifest
@@ -96,7 +97,10 @@ class MinecraftClientDownloadManager(
                 }
 
             resolver.resolveLibrariesRoot().let { libraryRoot ->
-                this += LibrariesDownloader(version, libraryRoot.toPath(), poolSize = 18, ktorClient = ktorClient)
+                val ld = LibrariesDownloader(version, libraryRoot.toPath(), poolSize = 18, ktorClient = ktorClient)
+                this += ld
+                if (ld.containsFabricLibraries())
+                    this += ld.createFabricLibraryDownloader()
             }
 
         }.onEach {

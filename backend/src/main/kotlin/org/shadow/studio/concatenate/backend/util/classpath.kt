@@ -43,7 +43,6 @@ suspend fun releaseNativeLibraries(libraries: List<LibraryItem>, librariesRootFi
     }
 }
 
-
 inline fun List<LibraryItem>.forEachAvailableArtifact(action: LibraryItem.(Artifact) -> Unit) {
     forEachAvailable { lib ->
         lib.pickArtifact(action)

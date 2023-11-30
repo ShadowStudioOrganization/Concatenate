@@ -14,7 +14,7 @@ import org.slf4j.Logger
 open class ConcatenateDownloader(
     internal var poolSize: Int = DEFAULT_CONCATE_DOWNLOADER_POOL_SIZE,
     override val taskTTL: Int = DEFAULT_CONCATE_DOWNLOADER_TASK_TTL,
-    protected val ktorClient: HttpClient = globalClient,
+    protected open val ktorClient: HttpClient = globalClient,
     internal var ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
 ) : MultiRoutineDownloader {
 

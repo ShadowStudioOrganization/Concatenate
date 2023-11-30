@@ -78,6 +78,7 @@ data class LoggingFile(
     val url: String
 )
 
+//@JsonDeserialize(using = LibraryItemDeserializer::class)
 data class LibraryItem(
     val name: String,
     val downloads: Downloads? = null,
@@ -142,4 +143,6 @@ data class Artifact(
     val sha1: String,
     val size: Long,
     val url: String
-)
+) {
+    var isUnknownSH1orSize: Boolean = false
+}

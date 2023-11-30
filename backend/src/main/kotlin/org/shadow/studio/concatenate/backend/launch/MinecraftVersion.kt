@@ -6,6 +6,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.shadow.studio.concatenate.backend.data.launchermeta.Version
 import org.shadow.studio.concatenate.backend.data.profile.Arguments
 import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
+import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
+import org.shadow.studio.concatenate.backend.serializer.LibraryItemDeserializer
 import org.shadow.studio.concatenate.backend.serializer.MinecraftArgumentsDeserializer
 import org.shadow.studio.concatenate.backend.util.getInternalLauncherMetaManifest
 import org.shadow.studio.concatenate.backend.util.*
@@ -36,6 +38,7 @@ class MinecraftVersion(
         val objectMapper = jacksonObjectMapper()
         val module = SimpleModule()
         module.addDeserializer(Arguments::class.java, MinecraftArgumentsDeserializer())
+         module.addDeserializer(LibraryItem::class.java, LibraryItemDeserializer())
         objectMapper.registerModule(module)
 
         return objectMapper.readValue<JsonProfile>(jsonProfile)

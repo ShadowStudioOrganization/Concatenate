@@ -95,6 +95,7 @@ class MinecraftClientLauncher(
                 put("version_name", version.versionName)
                 put("classpath", resolver
                     .resolveClasspath(true)
+                    .distinctBy { it.absolutePath }
                     .joinToString(File.pathSeparator) { it.absolutePath }
                 )
                 put("launcher_name", Concatenate.launcherName)

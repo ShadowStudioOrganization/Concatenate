@@ -11,7 +11,13 @@ class LauncherMetaManifestDownloader(
     officialRepositoryUrl: String = OFFICIAL_LAUNCHER_META_REPO_HEAD,
     ktorClient: HttpClient = globalClient,
     ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
-) : UnknownLengthResourceDownloader(officialRepositoryUrl, ktorClient, ktorBuffetSize) {
+) : UnknownLengthResourceDownloader(
+    officialRepositoryUrl = officialRepositoryUrl,
+    poolSize = 1,
+    taskTTL = 3,
+    ktorClient = ktorClient,
+    ktorBuffetSize = ktorBuffetSize
+) {
 
     private val url = "http://launchermeta.mojang.com/mc/game/version_manifest_v2.json"
 

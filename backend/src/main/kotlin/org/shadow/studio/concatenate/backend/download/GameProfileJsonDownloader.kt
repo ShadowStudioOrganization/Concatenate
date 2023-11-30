@@ -14,7 +14,13 @@ class GameProfileJsonDownloader(
     officialRepositoryUrl: String = OFFICIAL_JSON_PROFILE_REPO_HEAD,
     ktorClient: HttpClient = globalClient,
     ktorBuffetSize: Long = DEFAULT_CONCATE_DOWNLOADER_KTOR_BUFFER_SIZE
-): UnknownLengthResourceDownloader(officialRepositoryUrl, ktorClient, ktorBuffetSize) {
+): UnknownLengthResourceDownloader(
+    officialRepositoryUrl = officialRepositoryUrl,
+    poolSize = 1,
+    taskTTL = 3,
+    ktorClient = ktorClient,
+    ktorBuffetSize = ktorBuffetSize
+) {
 
     companion object {
         const val OFFICIAL_JSON_PROFILE_REPO_HEAD = "https://piston-data.mojang.com/"

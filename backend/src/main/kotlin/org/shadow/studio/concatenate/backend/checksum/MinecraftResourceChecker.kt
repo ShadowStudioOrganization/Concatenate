@@ -59,10 +59,12 @@ open class MinecraftResourceChecker(private val logger: Logger = globalLogger) {
         val failedPaths = mutableListOf<File>()
         libraries.forEachAvailableArtifactAndClassifier { artifact ->
             val jar = File(librariesRootFile, artifact.path) // todo fix here
-            if (!checkSum(jar, artifact.size, artifact.sha1)) {
-                failedPaths += jar
+            if (artifact.isUnknownSH1orSize) {
+                if (!jar.exists()) failedPaths += jar
+            } else {
+                if (!checkSum(jar, artifact.size, artifact.sha1)) failedPaths += jar
+                logger.debug("checked library: {}", jar)
             }
-            logger.debug("checked library: {}", jar)
         }
 
         return failedPaths

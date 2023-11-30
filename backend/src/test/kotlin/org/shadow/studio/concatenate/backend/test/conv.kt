@@ -25,7 +25,9 @@ import kotlin.time.measureTime
 suspend fun main(): Unit = withContext(Dispatchers.IO) {
     val time = measureTime {
         dmc()
+//        libDownload()
     }
+
 
     println("total spent: $time")
 }
@@ -34,9 +36,9 @@ suspend fun main(): Unit = withContext(Dispatchers.IO) {
 
 
 suspend fun dmc() = withContext(Dispatchers.IO) {
-    val versionName = "FTB StoneBlock 3 1.6.1"
-    val versionId = "1.18.2"
-    val workingDir = File("D:\\Games\\aloneg") // resolveBackendBuildPath("run2")
+    val versionName = "flandrebakapack-1.20.1"
+    val versionId = "1.20.1"
+    val workingDir = File("D:\\Games\\aloneg") //resolveBackendBuildPath("run2") //
     val launcherMeta = getInternalLauncherMetaManifest()
     val group = MinecraftClientDownloadManager(versionId, versionName, workingDir, launcherMeta, true)
 
@@ -58,7 +60,10 @@ suspend fun dmc() = withContext(Dispatchers.IO) {
 
     group.downloadManifest()
     group.initResourcesDownloader()
-    group.download()
+    group.download {
+//        (logger as Logger).level = Level.ERROR
+//        setLogger()
+    }
 
     val launcher = group.buildLauncher {
         loginMethod = OfflineMethod("whiterasbk")
@@ -68,15 +73,12 @@ suspend fun dmc() = withContext(Dispatchers.IO) {
             stdoutEncoding = "GB13080"
             initialJavaHeapSize = "1G"
             maximumJavaHeapSize = "6G"
-//            customJvmArguments {
-//                this += "--add-exports"
-//                this += "cpw.mods.bootstraplauncher/cpw.mods.bootstraplauncher=ALL-UNNAMED"
-//            }
         }
+//        (logger as Logger).level = Level.INFO
     }
 
     val instance = launcher.launch()
-    resolveBackendBuildPath("tmp/launch.bat").writeText(launcher.buildLaunchScript())
+//    resolveBackendBuildPath("tmp/launch.bat").writeText(launcher.buildLaunchScript())
 
     instance.handleProcessIO()
 
@@ -93,10 +95,10 @@ suspend fun launcherMetaDownload() {
 
 suspend fun libDownload() {
 
-    val baseDir = "D:/ProjectFiles/idea/Concatenate/backend/build/tmp/repos"
-    val mv = MinecraftVersion("1.17.1", File("D:/Games/aloneg/versions/1.17.1/1.17.1.json"))
+    val baseDir = resolveBackendBuildPath("run2/libraries")
+    val mv = MinecraftVersion("1.20.1", resolveBackendBuildPath("run2/versions/fbp/fbp.json"))
 
-    val downloader = LibrariesDownloader(mv.profile.libraries, Path.of(baseDir))
+    val downloader = LibrariesDownloader(mv.profile.libraries, baseDir.toPath())
 
     downloader.apply {
         val mLogger = LoggerFactory.getLogger("download")
@@ -113,7 +115,11 @@ suspend fun libDownload() {
         }
     }
 
-    downloader.download()
+
+    val createFabricLibraryDownloader = downloader.createFabricLibraryDownloader()
+
+    createFabricLibraryDownloader.download()
+//    downloader.download()
 }
 
 suspend fun assetDownload() = withContext(Dispatchers.IO) {
