@@ -21,6 +21,9 @@ dependencies {
     implementation("org.apache.maven.resolver:maven-resolver-impl:1.9.16")
 
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+
+    implementation("com.github.whiterasbk:fabric-installer:5079948309")
+
     // https://mvnrepository.com/artifact/commons-cli/commons-cli
 //    implementation("commons-cli:commons-cli:1.6.0")
 

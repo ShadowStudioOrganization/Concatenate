@@ -12,33 +12,14 @@ import org.shadow.studio.concatenate.backend.data.profile.Artifact
 import org.shadow.studio.concatenate.backend.data.profile.Downloads
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
 
-class LibraryItemDeserializer : StdDeserializer<LibraryItem>(LibraryItem::class.java) {
+class LibraryItemDeserializer : DefaultActionDeserializer<LibraryItem>(LibraryItem::class) {
 
-    override fun deserialize(parser: JsonParser?, ctx: DeserializationContext?): LibraryItem {
-        if (parser == null || ctx == null) error("jackson parser or deserialization context can not be null")
-        val node: JsonNode = parser.codec.readTree(parser)
+    override fun deserialize(parser: JsonParser, ctx: DeserializationContext): LibraryItem {
+        val libraryItem = super.deserialize(parser, ctx)
 
-        if (node.has("downloads")) {
-            // resolution from https://stackoverflow.com/a/47274493/20029350
-
-            val config: DeserializationConfig = ctx.config
-            val type = TypeFactory.defaultInstance().constructType(LibraryItem::class.java)
-            val defaultDeserializer =
-                BeanDeserializerFactory.instance.buildBeanDeserializer(ctx, type, config.introspect(type))
-
-            if (defaultDeserializer is ResolvableDeserializer) defaultDeserializer.resolve(ctx)
-
-            val treeParser: JsonParser = parser.codec.treeAsTokens(node)
-            config.initialize(treeParser)
-
-            if (treeParser.currentToken == null) treeParser.nextToken()
-
-            return defaultDeserializer.deserialize(treeParser, ctx) as LibraryItem
-        } else {
-            // assume as fabric library
-
-            val name = node["name"].textValue() ?: error("")
-            val repoUrl = node["url"].textValue() ?: error("")
+        return libraryItem.downloads?.let { libraryItem } ?: run {
+            val name = libraryItem.name
+            val repoUrl = libraryItem.url ?: error("")
 
             val pathCom = name.split(":").apply { if (size !in 3..4) error("") }
 
@@ -66,7 +47,7 @@ class LibraryItemDeserializer : StdDeserializer<LibraryItem>(LibraryItem::class.
                 Downloads(
                     Artifact(path, "", 1L, url).apply { isUnknownSH1orSize = true }
                 ),
-                url =  url
+                url = url
             )
         }
     }

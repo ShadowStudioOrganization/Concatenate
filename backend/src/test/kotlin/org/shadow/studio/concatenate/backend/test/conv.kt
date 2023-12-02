@@ -24,6 +24,9 @@ import kotlin.time.measureTime
 @OptIn(ExperimentalTime::class)
 suspend fun main(): Unit = withContext(Dispatchers.IO) {
     val time = measureTime {
+
+//        net.fabricmc.installer.Main.main(arrayOf())
+
         dmc()
 //        libDownload()
     }
@@ -36,9 +39,9 @@ suspend fun main(): Unit = withContext(Dispatchers.IO) {
 
 
 suspend fun dmc() = withContext(Dispatchers.IO) {
-    val versionName = "flandrebakapack-1.20.1"
+    val versionName = "1.20.1"
     val versionId = "1.20.1"
-    val workingDir = File("D:\\Games\\aloneg") //resolveBackendBuildPath("run2") //
+    val workingDir = resolveBackendBuildPath("run2") //  File("D:\\Games\\aloneg")
     val launcherMeta = getInternalLauncherMetaManifest()
     val group = MinecraftClientDownloadManager(versionId, versionName, workingDir, launcherMeta, true)
 

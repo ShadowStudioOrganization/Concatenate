@@ -7,6 +7,7 @@ import org.shadow.studio.concatenate.backend.data.launchermeta.Version
 import org.shadow.studio.concatenate.backend.data.profile.Arguments
 import org.shadow.studio.concatenate.backend.data.profile.JsonProfile
 import org.shadow.studio.concatenate.backend.data.profile.LibraryItem
+import org.shadow.studio.concatenate.backend.serializer.JsonProfileDeserializer
 import org.shadow.studio.concatenate.backend.serializer.LibraryItemDeserializer
 import org.shadow.studio.concatenate.backend.serializer.MinecraftArgumentsDeserializer
 import org.shadow.studio.concatenate.backend.util.getInternalLauncherMetaManifest
@@ -28,6 +29,10 @@ class MinecraftVersion(
     ) : this(versionName, jsonProfile.readText(), gameJar, isolated)
 
     val profile: JsonProfile by lazy { getGameJsonProfile() }
+
+    /**
+     * vanilla minecraft version id
+     */
     val versionId: String by lazy { profile.id }
 
     fun getAssetIndex(): String = profile.assetIndex.id
@@ -37,8 +42,9 @@ class MinecraftVersion(
     private fun getGameJsonProfile(): JsonProfile {
         val objectMapper = jacksonObjectMapper()
         val module = SimpleModule()
+        module.addDeserializer(JsonProfile::class.java, JsonProfileDeserializer())
         module.addDeserializer(Arguments::class.java, MinecraftArgumentsDeserializer())
-         module.addDeserializer(LibraryItem::class.java, LibraryItemDeserializer())
+        module.addDeserializer(LibraryItem::class.java, LibraryItemDeserializer())
         objectMapper.registerModule(module)
 
         return objectMapper.readValue<JsonProfile>(jsonProfile)
