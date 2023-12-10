@@ -1,8 +1,10 @@
 package org.shadow.studio.concatenate.frontend.data
 
 data class User (
-    val userName: String,
+    var userName: String,
     val uuid: String,
-    val token: String
+    val token: String,
+    val refreshToken: String,
+    val loginType: String
     )
 
