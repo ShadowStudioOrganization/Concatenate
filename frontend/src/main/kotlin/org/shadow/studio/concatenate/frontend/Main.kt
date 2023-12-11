@@ -1,11 +1,9 @@
 package org.shadow.studio.concatenate.frontend
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,28 +17,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import org.shadow.studio.concatenate.frontend.data.User
+import org.shadow.studio.concatenate.frontend.pages.gamePage
 import org.shadow.studio.concatenate.frontend.pages.navigationHomepage
 
-@Composable
-@Preview
-fun App() {
-    var text by remember { mutableStateOf("Hello, World!") }
-
-    MaterialTheme {
-        Button(onClick = {
-            text = "Hello, Desktop!!"
-        }) {
-            Text(text)
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 fun main() = application {
     var boxIndex by remember { mutableStateOf(0) }
     var text1 by remember { mutableStateOf("管理") }
     var text2 by remember { mutableStateOf("设置") }
-    var currentUser by remember { mutableStateOf(User(userName = "", uuid = "12345", token = "null", refreshToken = "null", "微软")) }
 
     Window(onCloseRequest = ::exitApplication, title = "Concatenate Minecraft Launcher", resizable = false) {
         Scaffold(modifier = Modifier.border(width = 1.dp, color = Color.White.copy(0f)),
@@ -100,7 +83,7 @@ fun main() = application {
                             )
                         ) {
                             Text(fontSize = 15.sp
-                                ,text = "管理")
+                                ,text = "游戏")
                         }
                         Button(
                             modifier = Modifier.padding(start = 350.dp)
@@ -139,13 +122,9 @@ fun main() = application {
                 .background(color = Color.White)
         ) {
             if (boxIndex == 0) {
-                    navigationHomepage(currentUser)
+                navigationHomepage()
             } else if (boxIndex == 1) {
-                Button(onClick = {
-                    text1 = "管理(todo)"
-                }) {
-                    Text(text1)
-                }
+                gamePage()
             } else if (boxIndex == 2) {
                     Button(onClick = {
                         text2 = "设置(todo)"

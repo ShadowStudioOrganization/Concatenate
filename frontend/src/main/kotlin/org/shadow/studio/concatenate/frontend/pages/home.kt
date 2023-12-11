@@ -9,8 +9,6 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -27,9 +25,18 @@ import org.shadow.studio.concatenate.frontend.util.openUrl
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun navigationHomepage(currentUser: User) {
+fun navigationHomepage() {
     var boxIndex by remember { mutableStateOf(0) }
-    var currentUser by remember { mutableStateOf(currentUser) }
+    var addUser by remember { mutableStateOf(false) }
+    var currentUser by remember { mutableStateOf(User(userName = "", uuid = "12345", token = "null", refreshToken = "null", "微软")) }
+
+    var testList = remember { mutableListOf(User(userName = "G_Breeze", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
+        User(userName = "whiterasbk", uuid = "123456", token = "null", refreshToken = "null", loginType = "微软"),
+        User(userName = "whiterasbk", uuid = "123457", token = "null", refreshToken = "null", loginType = "微软"),
+        User(userName = "whiterasbk", uuid = "123458", token = "null", refreshToken = "null", loginType = "微软"),
+        User(userName = "whiterasbk", uuid = "123459", token = "null", refreshToken = "null", loginType = "微软"),
+        User(userName = "whiterasbk", uuid = "123455", token = "null", refreshToken = "null", loginType = "微软"),
+    ) }
     if (boxIndex == 0) {
         startGame()
     }
@@ -70,22 +77,25 @@ fun navigationHomepage(currentUser: User) {
                                             focusedElevation = 0.dp),
                                         onClick = {
                                             boxIndex = 1
+                                            if (currentUser.userName == "") {
+                                                addUser = true
+                                            }
                                         }) {
                                     }
                                     Image(painter = painterResource(if(currentUser.userName == "") "icons/add.png" else "G_Breeze_avatar.png"),
                                         contentDescription = null,
                                         contentScale = ContentScale.Fit,
-                                        modifier = Modifier.fillMaxHeight().fillMaxWidth()
+                                        modifier = Modifier.size(height = 75.dp, width = 100.dp).padding(11.dp)
                                             .clip(RoundedCornerShape(2.dp)))
                                 }
                                 Text(textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(top = 20.dp).width(150.dp),
+                                    modifier = Modifier.padding(top = 20.dp).width(150.dp).height(16.dp),
                                     fontSize = 14.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     text = if(currentUser.userName == "") "暂无用户" else currentUser.userName)
                                 Text(textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(top = 5.dp).width(95.dp),
+                                    modifier = Modifier.padding(top = 5.dp).width(95.dp).height(14.dp),
                                     fontSize = 12.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -127,7 +137,7 @@ fun navigationHomepage(currentUser: User) {
                                                 hoveredElevation = 0.dp,
                                                 focusedElevation = 0.dp),
                                             onClick = {
-                                                // TODO: exit account
+                                                currentUser = User("","","","","")
                                             }) {
                                         }
                                         Image(painter = painterResource("icons/exit.png"),
@@ -194,7 +204,7 @@ fun navigationHomepage(currentUser: User) {
                         val isHovered2 by interactionSource2.collectIsHoveredAsState()
                         Text(modifier = Modifier.padding(start = 20.dp, top = 10.dp),
                             fontSize = 15.sp,
-                            text = "游戏")
+                            text = "版本 | 整合包")
                         Divider(color = Color.DarkGray,
                             thickness = 1.dp,
                             startIndent = 5.dp,
@@ -275,14 +285,6 @@ fun navigationHomepage(currentUser: User) {
                         contentScale = ContentScale.FillBounds,
                         modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth(0.9f).padding(start = 5.dp, top = 10.dp))
                 }
-                var addUser by remember { mutableStateOf(false) }
-                var testList = remember { mutableListOf(User(userName = "G_Breeze", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
-                    User(userName = "whiterasbk", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
-                    User(userName = "whiterasbk", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
-                    User(userName = "whiterasbk", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
-                    User(userName = "whiterasbk", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
-                    User(userName = "whiterasbk", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
-                ) }
                 /*
                 * add user page
                 * */
@@ -318,7 +320,11 @@ fun navigationHomepage(currentUser: User) {
                         },
                         confirmButton = {
                             TextButton(onClick = {
-                                testList.add(User(userName,"","","","离线"))
+                                val newUser = User(userName,"","","","离线")
+                                if (!testList.contains(newUser)) {
+                                    currentUser = newUser
+                                    testList.add(currentUser)
+                                }
                                 addUser = false
                             }) {
                                 Text("确认")
@@ -433,14 +439,17 @@ fun navigationHomepage(currentUser: User) {
                                                         focusedElevation = 0.dp),
                                                     onClick = {
                                                         testList.remove(it)
+                                                        if (currentUser.equals(it)) {
+                                                            currentUser = User("","","","","")
+                                                        }
                                                         addUser = true
                                                         addUser = false
                                                     }) {
                                                 }
-                                                Image(painter = painterResource("icons/exit_red.png"),
+                                                Image(painter = painterResource("icons/no.png"),
                                                     contentDescription = null,
                                                     contentScale = ContentScale.FillBounds,
-                                                    modifier = Modifier.fillMaxSize(0.8f).padding(top = 10.dp, start = 10.dp))
+                                                    modifier = Modifier.fillMaxSize(0.85f).padding(top = 5.dp, start = 5.dp))
                                             }
                                         }
                                     }
