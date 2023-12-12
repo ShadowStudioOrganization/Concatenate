@@ -2,6 +2,7 @@ package org.shadow.studio.concatenate.frontend.pages
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.shadow.studio.concatenate.frontend.data.Package
 import org.shadow.studio.concatenate.frontend.data.User
 import org.shadow.studio.concatenate.frontend.util.openUrl
 
@@ -28,7 +30,9 @@ import org.shadow.studio.concatenate.frontend.util.openUrl
 fun navigationHomepage() {
     var boxIndex by remember { mutableStateOf(0) }
     var addUser by remember { mutableStateOf(false) }
+    var selectPackage by remember { mutableStateOf(false) }
     var currentUser by remember { mutableStateOf(User(userName = "", uuid = "12345", token = "null", refreshToken = "null", "微软")) }
+    var currentPackage by remember { mutableStateOf(Package("1.12.2-原版整合(假)测试长度测试长度测试长度", "unknown", "1.0")) }
 
     var testList = remember { mutableListOf(User(userName = "G_Breeze", uuid = "12345", token = "null", refreshToken = "null", loginType = "微软"),
         User(userName = "whiterasbk", uuid = "123456", token = "null", refreshToken = "null", loginType = "微软"),
@@ -36,6 +40,13 @@ fun navigationHomepage() {
         User(userName = "whiterasbk", uuid = "123458", token = "null", refreshToken = "null", loginType = "微软"),
         User(userName = "whiterasbk", uuid = "123459", token = "null", refreshToken = "null", loginType = "微软"),
         User(userName = "whiterasbk", uuid = "123455", token = "null", refreshToken = "null", loginType = "微软"),
+    ) }
+    var testPackageList = remember { mutableListOf(Package("1.12.2-原版整合(假)测试长度测试长度测试长度", "unknown", "1.0"),
+        Package("1.21.2-原版整合(假)", "unknown", "1.0"),
+        Package("1.12.1-原版整合(假)", "unknown", "1.0"),
+        Package("1.9-原版整合(假)", "unknown", "1.0"),
+        Package("1.4.7-原版整合(假)", "unknown", "1.0"),
+        Package("1.16-原版整合(假)", "unknown", "1.0"),
     ) }
     if (boxIndex == 0) {
         startGame()
@@ -202,6 +213,8 @@ fun navigationHomepage() {
                         val isHovered1 by interactionSource1.collectIsHoveredAsState()
                         val interactionSource2: MutableInteractionSource = remember { MutableInteractionSource() }
                         val isHovered2 by interactionSource2.collectIsHoveredAsState()
+                        val interactionSource3: MutableInteractionSource = remember { MutableInteractionSource() }
+                        val isFocused1 by interactionSource3.collectIsFocusedAsState()
                         Text(modifier = Modifier.padding(start = 20.dp, top = 10.dp),
                             fontSize = 15.sp,
                             text = "版本 | 整合包")
@@ -227,13 +240,13 @@ fun navigationHomepage() {
                                         fontSize = 14.sp,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        text = "1.21.2-原版整合")
+                                        text = currentPackage.packageName)
                                     Text(modifier = Modifier.padding(top = 5.dp, start = 1.dp).width(125.dp),
                                         fontSize = 12.sp,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         color = Color(0, 170, 230),
-                                        text = "作者:xxx")
+                                        text = "作者:"+currentPackage.author)
                                 }
                             }
                         }
@@ -250,11 +263,85 @@ fun navigationHomepage() {
                                     modifier = Modifier.height(55.dp).width(55.dp).padding(start = 10.dp)
                                         .clip(RoundedCornerShape(2.dp))
                                 )
-                                Text(modifier = Modifier.padding(start = 10.dp).width(125.dp),
+                                Text(modifier = Modifier.padding(start = 10.dp).width(100.dp),
                                     fontSize = 14.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     text = "游戏/版本列表")
+                                Box(modifier = Modifier
+                                    .size(height = 44.dp, width = 35.dp)
+                                    .background(color = Color.Unspecified)) {
+                                    Button(modifier = Modifier.fillMaxSize(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.Unspecified,
+                                            contentColor = Color.White.copy(0f)
+                                        ),
+                                        elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                            pressedElevation = 0.dp,
+                                            disabledElevation = 0.dp,
+                                            hoveredElevation = 0.dp,
+                                            focusedElevation = 0.dp),
+                                        onClick = {
+                                            selectPackage = !selectPackage
+                                        }) {
+                                    }
+                                    Image(painter = painterResource("icons/right.png"),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.FillBounds,
+                                        modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth(0.9f).padding(start = 5.dp, top = 10.dp))
+                                    DropdownMenu(
+                                        expanded = selectPackage,
+                                        onDismissRequest = {selectPackage = false},
+                                        modifier = Modifier.width(250.dp)
+                                    ) {
+                                        if (testPackageList.isNotEmpty()) {
+                                            testPackageList.forEach {
+                                                DropdownMenuItem(onClick = {
+                                                    currentPackage = it
+                                                    selectPackage = false
+                                                }) {
+                                                    Box(modifier = Modifier.fillMaxWidth()
+                                                        .height(60.dp)){
+                                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                                            Image(
+                                                                painter = painterResource("icons/unknown_pack.png"),
+                                                                contentDescription = null,
+                                                                contentScale = ContentScale.FillBounds,
+                                                                modifier = Modifier.height(48.dp).width(35.dp).padding(top = 13.dp)
+                                                                    .clip(RoundedCornerShape(2.dp))
+                                                            )
+                                                            Column {
+                                                                Text(modifier = Modifier.padding(top = 13.dp, start = 5.dp).width(200.dp),
+                                                                    fontSize = 14.sp,
+                                                                    maxLines = 1,
+                                                                    overflow = TextOverflow.Ellipsis,
+                                                                    text = it.packageName)
+                                                                Text(modifier = Modifier.padding(top = 5.dp, start = 5.dp).width(200.dp),
+                                                                    fontSize = 12.sp,
+                                                                    maxLines = 1,
+                                                                    overflow = TextOverflow.Ellipsis,
+                                                                    color = Color(0, 170, 230),
+                                                                    text = "作者:"+it.author+" 版本:"+it.version)
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            DropdownMenuItem(onClick = {
+                                                selectPackage = false
+                                            }) {
+                                                Text(modifier = Modifier.padding(start = 40.dp),
+                                                    fontSize = 18.sp,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    color = Color.Red,
+                                                    textAlign = TextAlign.Center,
+                                                    text = "暂无游戏|整合包")
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -280,7 +367,7 @@ fun navigationHomepage() {
                             boxIndex = 0
                         }) {
                     }
-                    Image(painter = painterResource("icons/back.png"),
+                    Image(painter = painterResource("icons/left.png"),
                         contentDescription = null,
                         contentScale = ContentScale.FillBounds,
                         modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().padding(start = 5.dp, top = 10.dp))
@@ -472,6 +559,9 @@ fun navigationHomepage() {
                     }
                 }
             }
+        }
+        if (boxIndex == 2) {
+            // todo package info page
         }
     }
 }
