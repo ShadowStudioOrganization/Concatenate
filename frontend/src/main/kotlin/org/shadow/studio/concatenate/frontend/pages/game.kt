@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.shadow.studio.concatenate.frontend.data.Mod
 import org.shadow.studio.concatenate.frontend.data.User
 import org.shadow.studio.concatenate.frontend.util.openUrl
 
@@ -28,6 +29,13 @@ import org.shadow.studio.concatenate.frontend.util.openUrl
 fun gamePage() {
     var boxIndex by remember { mutableStateOf(0) }
     var ramSize by remember { mutableStateOf("2048") }
+    var jvmArgs by remember { mutableStateOf("") }
+    var testModList = remember { mutableListOf(Mod("mod1","1.0","unknown",true),
+        Mod("mod2","1.0","unknown",true),
+        Mod("mod3","1.0","unknown",true),
+        Mod("mod4","1.0","unknown",true),
+        Mod("mod5","1.0","unknown",true),
+        Mod("mod6","1.0","unknown",true)) }
     Row {
         Box(modifier = Modifier.fillMaxHeight()
             .width(200.dp)
@@ -117,7 +125,19 @@ fun gamePage() {
             }
         }
         if (boxIndex == 0) {
+            /*
+             * global settings page
+             * */
             Column{
+                Text(modifier = Modifier.padding(start = 50.dp, top = 15.dp),
+                    fontSize = 17.sp,
+                    color = Color(0, 170, 230),
+                    text = "全局")
+                Divider(color = Color.Gray,
+                    thickness = 1.dp,
+                    startIndent = 5.dp,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 5.dp, bottom = 10.dp, end = 5.dp))
                 Row(modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 20.dp),
@@ -156,6 +176,126 @@ fun gamePage() {
                         text = "MB",
                         fontSize = 18.sp
                     )
+                }
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceEvenly) {
+                    Text(
+                        text = "jvm参数:",
+                        fontSize = 18.sp
+                    )
+                    TextField(
+                        value = jvmArgs,
+                        onValueChange = {jvmArgs = it},
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .height(48.dp),
+                        textStyle = TextStyle(
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Start
+                        ),
+
+                        )
+                }
+            }
+        } else if (boxIndex == 1) {
+            /*
+             * mods manage page
+             * */
+            Column {
+                Text(modifier = Modifier.padding(start = 50.dp, top = 15.dp),
+                    fontSize = 17.sp,
+                    color = Color(0, 170, 230),
+                    text = "模组")
+                Divider(color = Color.Gray,
+                    thickness = 1.dp,
+                    startIndent = 5.dp,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 5.dp, bottom = 10.dp, end = 5.dp))
+                Surface {
+                    val scrollState = rememberScrollState()
+                    Column(modifier = Modifier
+                        .verticalScroll(scrollState)) {
+                        if (testModList.isNotEmpty()) {
+                            testModList.forEach() {
+                                Box() {
+                                    Button(modifier = Modifier.fillMaxWidth().height(50.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color.Unspecified,
+                                            contentColor = Color.White.copy(0f)
+                                        ),
+                                        elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                            pressedElevation = 0.dp,
+                                            disabledElevation = 0.dp,
+                                            hoveredElevation = 0.dp,
+                                            focusedElevation = 0.dp),
+                                        onClick = {
+                                            it.isEnabled = !it.isEnabled
+                                            boxIndex = 0
+                                            boxIndex = 1
+                                        }) {
+                                    }
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Image(
+                                            painter = painterResource("icons/mod_default.png"),
+                                            contentDescription = null,
+                                            contentScale = ContentScale.FillBounds,
+                                            modifier = Modifier.size(height = 50.dp, width = 75.dp).padding(start = 10.dp, end = 15.dp)
+                                                .clip(RoundedCornerShape(2.dp))
+                                        )
+                                        Column(modifier = Modifier.width(400.dp)) {
+                                            Text(fontSize = 16.sp,
+                                                text = it.modName)
+                                            Text(fontSize = 11.sp,
+                                                color = Color(0, 170, 230),
+                                                text = "作者-"+it.author+" 版本-"+it.version)
+                                        }
+                                        Box(modifier = Modifier.size(height = 40.dp, width = 40.dp)
+                                            .background(color = Color.White.copy(alpha = 0f))) {
+                                            Button(modifier = Modifier.fillMaxSize(),
+                                                colors = ButtonDefaults.buttonColors(
+                                                    backgroundColor = Color.LightGray.copy(0.35f),
+                                                    contentColor = Color.White.copy(0f)
+                                                ),
+                                                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                                    pressedElevation = 0.dp,
+                                                    disabledElevation = 0.dp,
+                                                    hoveredElevation = 0.dp,
+                                                    focusedElevation = 0.dp),
+                                                onClick = {
+                                                    it.isEnabled = !it.isEnabled
+                                                    boxIndex = 0
+                                                    boxIndex = 1
+                                                }) {
+                                            }
+                                            Image(painter = painterResource(if(it.isEnabled) "icons/enable.png" else "icons/disable.png"),
+                                                contentDescription = null,
+                                                contentScale = ContentScale.FillBounds,
+                                                modifier = Modifier.fillMaxSize(0.85f).padding(top = 5.dp, start = 5.dp))
+                                        }
+                                    }
+                                }
+                                Divider(color = Color.LightGray,
+                                    thickness = 1.dp,
+                                    startIndent = 10.dp,
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(top = 5.dp, bottom = 5.dp, end = 10.dp))
+                            }
+                        } else {
+                            Text(modifier = Modifier
+                                .fillMaxSize().height(500.dp)
+                                .padding(start = 10.dp, top = 10.dp, end = 5.dp),
+                                fontSize = 26.sp,
+                                textAlign = TextAlign.Center,
+                                color = Color.Red,
+                                text = "未选择游戏/整合包,请先选择!")
+                        }
+                    }
                 }
             }
         }

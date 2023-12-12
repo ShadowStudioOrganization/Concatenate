@@ -45,7 +45,6 @@ bin/
 .DS_Store
 
 local.properties
-/frontend/src/main/resources/
 
 *.log
 *.log.gz

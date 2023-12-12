@@ -82,7 +82,7 @@ fun navigationHomepage() {
                                             }
                                         }) {
                                     }
-                                    Image(painter = painterResource(if(currentUser.userName == "") "icons/add.png" else "G_Breeze_avatar.png"),
+                                    Image(painter = painterResource(if(currentUser.userName == "") "icons/add.png" else "steve_avatar.png"),
                                         contentDescription = null,
                                         contentScale = ContentScale.Fit,
                                         modifier = Modifier.size(height = 75.dp, width = 100.dp).padding(11.dp)
@@ -216,19 +216,19 @@ fun navigationHomepage() {
                             .background(if (isHovered1) Color.LightGray.copy(0.5f) else Color.Unspecified)){
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Image(
-                                    painter = painterResource("G_Breeze_avatar.png"),
+                                    painter = painterResource("icons/unknown_pack.png"),
                                     contentDescription = null,
                                     contentScale = ContentScale.Fit,
-                                    modifier = Modifier.height(50.dp).width(50.dp).padding(top = 20.dp, start = 10.dp)
+                                    modifier = Modifier.height(55.dp).width(55.dp).padding(top = 20.dp, start = 10.dp)
                                         .clip(RoundedCornerShape(2.dp))
                                 )
                                 Column {
-                                    Text(modifier = Modifier.padding(top = 20.dp, start = 15.dp).width(125.dp),
+                                    Text(modifier = Modifier.padding(top = 20.dp, start = 1.dp).width(125.dp),
                                         fontSize = 14.sp,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        text = "2.33-不存在的整合包和版本")
-                                    Text(modifier = Modifier.padding(top = 5.dp, start = 15.dp).width(125.dp),
+                                        text = "1.21.2-原版整合")
+                                    Text(modifier = Modifier.padding(top = 5.dp, start = 1.dp).width(125.dp),
                                         fontSize = 12.sp,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
@@ -283,7 +283,7 @@ fun navigationHomepage() {
                     Image(painter = painterResource("icons/back.png"),
                         contentDescription = null,
                         contentScale = ContentScale.FillBounds,
-                        modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth(0.9f).padding(start = 5.dp, top = 10.dp))
+                        modifier = Modifier.fillMaxHeight(0.8f).fillMaxWidth().padding(start = 5.dp, top = 10.dp))
                 }
                 /*
                 * add user page
@@ -412,7 +412,7 @@ fun navigationHomepage() {
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             Image(
-                                                painter = painterResource("G_Breeze_avatar.png"),
+                                                painter = painterResource("steve_avatar.png"),
                                                 contentDescription = null,
                                                 contentScale = ContentScale.FillBounds,
                                                 modifier = Modifier.size(height = 50.dp, width = 75.dp).padding(start = 10.dp, end = 15.dp)
