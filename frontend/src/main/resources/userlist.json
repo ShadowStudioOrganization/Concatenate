@@ -1,0 +1,11 @@
+{
+    "currentUser": {
+        "userName": "",
+        "uuid": "",
+        "token": "",
+        "refreshToken": ""
+    },
+    "userList":[
+        
+    ]
+}
