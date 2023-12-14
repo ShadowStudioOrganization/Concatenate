@@ -4,4 +4,5 @@ data class Package (
     var packageName: String,
     val author: String,
     val version: String,
+    val brief: String
         )

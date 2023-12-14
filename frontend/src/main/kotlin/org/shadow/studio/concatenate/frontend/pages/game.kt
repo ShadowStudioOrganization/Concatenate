@@ -215,7 +215,7 @@ fun gamePage() {
                     startIndent = 5.dp,
                     modifier = Modifier.fillMaxWidth()
                         .padding(top = 5.dp, bottom = 10.dp, end = 5.dp))
-                Surface {
+                Surface(color = Color.LightGray.copy(alpha = 0.2f)) {
                     val scrollState = rememberScrollState()
                     Column(modifier = Modifier
                         .verticalScroll(scrollState)) {
@@ -225,7 +225,7 @@ fun gamePage() {
                                     Button(modifier = Modifier.fillMaxWidth().height(50.dp),
                                         colors = ButtonDefaults.buttonColors(
                                             backgroundColor = Color.Unspecified,
-                                            contentColor = Color.White.copy(0f)
+                                            contentColor = Color.Unspecified
                                         ),
                                         elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
                                             pressedElevation = 0.dp,
@@ -260,7 +260,7 @@ fun gamePage() {
                                             Button(modifier = Modifier.fillMaxSize(),
                                                 colors = ButtonDefaults.buttonColors(
                                                     backgroundColor = Color.LightGray.copy(0.35f),
-                                                    contentColor = Color.White.copy(0f)
+                                                    contentColor = Color.Unspecified
                                                 ),
                                                 elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
                                                     pressedElevation = 0.dp,
