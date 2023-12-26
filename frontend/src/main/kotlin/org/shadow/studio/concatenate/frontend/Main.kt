@@ -1,9 +1,7 @@
 package org.shadow.studio.concatenate.frontend
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -12,27 +10,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import org.shadow.studio.concatenate.frontend.data.User
-import org.shadow.studio.concatenate.frontend.pages.divider
+import org.shadow.studio.concatenate.frontend.util.divider
 import org.shadow.studio.concatenate.frontend.pages.gamePage
-import org.shadow.studio.concatenate.frontend.pages.invisibleButton
+import org.shadow.studio.concatenate.frontend.util.invisibleButton
 import org.shadow.studio.concatenate.frontend.pages.navigationHomepage
 import org.shadow.studio.concatenate.frontend.util.openUrl
-import java.lang.Thread.sleep
 
 @OptIn(ExperimentalMaterialApi::class)
 fun main() = application {

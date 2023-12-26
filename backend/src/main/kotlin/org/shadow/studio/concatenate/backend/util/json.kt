@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import org.shadow.studio.concatenate.backend.data.launchermeta.CurseforgeMetaManifest
 import org.shadow.studio.concatenate.backend.data.launchermeta.LauncherMetaManifest
 
 @get:JvmName("_internalVersionManifest")
@@ -14,7 +15,16 @@ private val internalLauncherMetaManifest: LauncherMetaManifest by lazy {
     )
 }
 
+@get:JvmName("_internalCurseforgeManifest")
+private val internalCurseforgeMetaManifest: CurseforgeMetaManifest by lazy {
+    jacksonObjectMapper().readValue<CurseforgeMetaManifest>(
+        getResourceAsString("ATM9/manifest.json")
+            ?: error("ATM9/manifest.json is not found in resource")
+    )
+}
+
 fun getInternalLauncherMetaManifest(): LauncherMetaManifest = internalLauncherMetaManifest
+fun getInternalCurseforgeMetaManifest(): CurseforgeMetaManifest = internalCurseforgeMetaManifest
 
 fun parseJsonToMap(json: String): Map<String, Any?> {
     val mapper = jacksonObjectMapper()

@@ -1,6 +1,5 @@
 package org.shadow.studio.concatenate.backend.download
 
-
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import kotlinx.coroutines.Dispatchers
@@ -22,11 +21,11 @@ import org.shadow.studio.concatenate.backend.util.globalLogger
 import org.slf4j.Logger
 import java.io.File
 
-class MinecraftClientDownloadManager(
+class MinecraftClientCurseforgeDownloadManager(
     private val versionId: String,
     versionName: String,
     workingDirectory: File,
-    private val meta: LauncherMetaManifest,
+    private val meta: CurseforgeMetaManifest,
     versionIsolated: Boolean = false
 ) {
 
@@ -48,19 +47,6 @@ class MinecraftClientDownloadManager(
      * this function should be called ahead of [initResourcesDownloader]
      */
     suspend fun downloadManifest(tryTimes: Int = 3, restFor: Long = 1000) {
-        layer.getMinecraftJsonProfilePosition().let { jsonProfileLocal ->
-            if (!jsonProfileLocal.exists()) {
-                val versionManifest: Version = meta.versions.find { it.id == versionId }
-                    ?: error("can't find the given minecraft version: $versionId in launcher mata manifest.")
-
-                GameProfileJsonDownloader(
-                    jsonProfileLocal.toPath(),
-                    versionManifest
-                ).download(tryTimes, restFor).apply {
-                    if (isNotEmpty()) error("download json profile of $versionManifest failed.")
-                }
-            }
-        }
 
         version = layer.newMinecraftVersion()
         resolver = MinecraftResourceResolver(layer, version)
@@ -105,7 +91,7 @@ class MinecraftClientDownloadManager(
             }
 
         }.onEach {
-            it.setLogger(this@MinecraftClientDownloadManager.logger)
+            it.setLogger(this@MinecraftClientCurseforgeDownloadManager.logger)
         }
     }
 

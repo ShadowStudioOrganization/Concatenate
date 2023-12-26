@@ -6,6 +6,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -23,13 +24,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.shadow.studio.concatenate.frontend.data.Mod
 import org.shadow.studio.concatenate.frontend.data.User
-import org.shadow.studio.concatenate.frontend.util.openUrl
+import org.shadow.studio.concatenate.frontend.util.*
 
 @Composable
 fun gamePage() {
     var boxIndex by remember { mutableStateOf(0) }
     var ramSize by remember { mutableStateOf("2048") }
     var jvmArgs by remember { mutableStateOf("") }
+    var select1 by remember { mutableStateOf(false) }
+    var typeMap = remember { mutableMapOf(0 to "原版", 1 to "整合包", 2 to "模组") }
+    var searchKey by remember { mutableStateOf("") }
+    var currentType by remember { mutableStateOf(1) }
     var testModList = remember { mutableListOf(Mod("mod1","1.0","unknown",true),
         Mod("mod2","1.0","unknown",true),
         Mod("mod3","1.0","unknown",true),
@@ -296,6 +301,123 @@ fun gamePage() {
                                 text = "未选择游戏/整合包,请先选择!")
                         }
                     }
+                }
+            }
+        } else if (boxIndex == 2) {
+            /*
+             * download page
+             * */
+            Column {
+                Row {
+                    Text(modifier = Modifier.padding(start = 50.dp, top = 15.dp),
+                        fontSize = 17.sp,
+                        color = Color(0, 170, 230),
+                        text = "搜索下载")
+                }
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp)
+                    ) {
+                        Text(modifier = Modifier.padding(start = 20.dp, top = 0.dp),
+                            fontSize = 16.sp,
+                            text = "下载类型:")
+                        Box(
+                            modifier = Modifier.height(25.dp).width(65.dp).padding(top = 0.dp)
+                        ) {
+                            lightButton {
+                                select1 = !select1
+                            }
+                            typeMap.get(currentType)?.let {
+                                Text(modifier = Modifier.width(65.dp).padding(top = 5.dp),
+                                    fontSize = 14.sp,
+                                    color = Color(0, 170, 230),
+                                    textAlign = TextAlign.Center,
+                                    text = it
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = select1,
+                                onDismissRequest = { select1 = false },
+                                modifier = Modifier.width(65.dp)
+                            ) {
+                                typeMap.forEach {
+                                    Box(
+                                        modifier = Modifier.width(65.dp).height(30.dp)
+                                    ) {
+                                        invisibleButton {
+                                            currentType = it.key
+                                            select1 = !select1
+                                        }
+                                        Text(
+                                            modifier = Modifier.width(65.dp).padding(top = 5.dp),
+                                            fontSize = 14.sp,
+                                            textAlign = TextAlign.Center,
+                                            text = it.value
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Text(modifier = Modifier.padding(start = 20.dp, top = 0.dp),
+                            fontSize = 16.sp,
+                            text = "搜索:")
+                        Box(
+                            modifier = Modifier.height(25.dp).padding(top = 0.dp)
+                        ) {
+                            BasicTextField(
+                                value = searchKey,
+                                onValueChange = { searchKey = it },
+                                singleLine = true,
+                                textStyle = TextStyle(fontSize = 16.sp),
+                                modifier = Modifier.height(35.dp).fillMaxWidth(0.8f).background(color = Color.LightGray.copy(0.5f), shape = CircleShape),
+                                decorationBox = {
+                                    innerTextField ->
+                                    Row(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
+                                        Box(modifier = Modifier.fillMaxSize(),
+                                            contentAlignment = Alignment.CenterStart) {
+                                            if (searchKey.isEmpty()) {
+                                                Text(
+                                                    modifier = Modifier,
+                                                    fontSize = 16.sp,
+                                                    color = Color(0,0,0,128),
+                                                    text = "请输入"
+                                                )
+                                            }
+                                            innerTextField()
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                        Box(modifier = Modifier.size(height = 30.dp, width = 40.dp).padding(start = 0.dp)
+                            .background(color = Color.White.copy(alpha = 0f))) {
+                            Button(modifier = Modifier.fillMaxSize(),
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = Color.LightGray.copy(0.35f),
+                                    contentColor = Color.White.copy(0f)
+                                ),
+                                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp,
+                                    pressedElevation = 0.dp,
+                                    disabledElevation = 0.dp,
+                                    hoveredElevation = 0.dp,
+                                    focusedElevation = 0.dp),
+                                onClick = {
+                                    // todo search by key
+                                }) {
+                            }
+                            Image(painter = painterResource("icons/search.png"),
+                                contentDescription = null,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize(0.85f).padding(top = 5.dp, start = 5.dp))
+                        }
+                    }
+                }
+                divider(Color.Gray, 5)
+                Surface(color = Color.LightGray.copy(alpha = 0.2f)) {
+                    val scrollState = rememberScrollState()
+                    Column(modifier = Modifier
+                        .verticalScroll(scrollState)) {}
                 }
             }
         }

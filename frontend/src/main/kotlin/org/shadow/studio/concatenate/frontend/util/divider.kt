@@ -1,4 +1,4 @@
-package org.shadow.studio.concatenate.frontend.pages
+package org.shadow.studio.concatenate.frontend.util
 
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth

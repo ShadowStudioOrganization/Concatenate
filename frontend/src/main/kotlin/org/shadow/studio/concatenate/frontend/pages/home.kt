@@ -1,8 +1,6 @@
 package org.shadow.studio.concatenate.frontend.pages
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
@@ -25,11 +23,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import org.shadow.studio.concatenate.frontend.data.Mod
 import org.shadow.studio.concatenate.frontend.data.Package
 import org.shadow.studio.concatenate.frontend.data.User
+import org.shadow.studio.concatenate.frontend.util.divider
+import org.shadow.studio.concatenate.frontend.util.invisibleButton
 import org.shadow.studio.concatenate.frontend.util.openUrl
+import org.shadow.studio.concatenate.frontend.util.verticalDivider
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable

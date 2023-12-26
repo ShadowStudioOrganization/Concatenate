@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.shadow.studio.concatenate.frontend.data.Mod
 import org.shadow.studio.concatenate.frontend.data.Package
+import org.shadow.studio.concatenate.frontend.util.divider
 
 @Composable
 fun packageinfo(currentPackage: Package, modList: MutableList<Mod>) {
